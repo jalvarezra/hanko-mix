@@ -34,7 +34,8 @@ public enum AppGrouper {
         var order: [AppID] = []
         var groups: [AppID: AppGroup] = [:]
         for process in processes where process.pid != ownPID {
-            guard let (id, name) = resolve(process, ownPID: ownPID, resolver: resolver) else { continue }
+            guard let (id, rawName) = resolve(process, ownPID: ownPID, resolver: resolver) else { continue }
+            let name = FriendlyNames.displayName(for: id, fallback: rawName)
             if var group = groups[id] {
                 group.processObjectIDs.insert(process.objectID)
                 group.isPlaying = group.isPlaying || process.isRunningOutput

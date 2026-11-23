@@ -8,7 +8,12 @@ struct AppRowView: View {
     var body: some View {
         HStack(spacing: 8) {
             Group {
-                if let icon = row.icon { Image(nsImage: icon) } else { Image(systemName: "app") }
+                if let icon = row.icon {
+                    Image(nsImage: icon)
+                } else {
+                    Image(systemName: FriendlyNames.systemSymbol(for: row.id) ?? "app")
+                        .foregroundStyle(.secondary)
+                }
             }
             .frame(width: 20, height: 20)
 
