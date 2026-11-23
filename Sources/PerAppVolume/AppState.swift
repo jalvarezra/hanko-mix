@@ -19,7 +19,7 @@ final class AppState {
     private(set) var rows: [AppRow] = []
     private(set) var defaultDevice: OutputDevice?
     private(set) var selectableDevices: [OutputDevice] = []
-    private(set) var needsPermissionExplanation = false
+    private(set) var permissionNotice: PermissionGate.Notice?
     private(set) var settings: SettingsFile
 
     @ObservationIgnored private let store: SettingsStore
@@ -97,7 +97,7 @@ final class AppState {
 
     func deferPermissionExplanation() {
         permissionDeferred = true
-        needsPermissionExplanation = false
+        permissionNotice = nil
     }
 
     func deviceSettings(for uid: String) -> DeviceSettings { settings.devices[uid] ?? DeviceSettings() }
@@ -144,7 +144,9 @@ final class AppState {
     private func settingsChanged() {
         settings = store.file
         let appSettings = Dictionary(uniqueKeysWithValues: settings.apps.map { (AppID($0.key), $0.value) })
-        let allowTaps = settings.permissionExplained
+        let explained = settings.permissionExplained
+        let permission = AudioCapturePermission.status()
+        let allowTaps = PermissionGate.decide(explained: explained, status: permission, wantsTaps: true).allowTaps
         let snapshot = snapshot
         rebuildRows()
         coordinator.apply(snapshot: snapshot, appSettings: appSettings, deviceSettings: settings.devices,
@@ -152,7 +154,9 @@ final class AppState {
             Task { @MainActor in
                 guard let self else { return }
                 self.statuses = result.statuses
-                self.needsPermissionExplanation = !allowTaps && !self.permissionDeferred && result.plannedCount > 0
+                let notice = PermissionGate.decide(explained: explained, status: permission,
+                                                   wantsTaps: result.plannedCount > 0).notice
+                self.permissionNotice = (notice == .explain && self.permissionDeferred) ? nil : notice
                 self.rebuildRows()
             }
         }

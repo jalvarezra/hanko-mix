@@ -6,9 +6,15 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if state.needsPermissionExplanation {
+            switch state.permissionNotice {
+            case .explain:
                 PermissionNotice(state: state)
                 Divider()
+            case .denied:
+                PermissionDeniedNotice()
+                Divider()
+            case nil:
+                EmptyView()
             }
             if state.rows.isEmpty {
                 Text("No app is playing audio right now.")
@@ -35,6 +41,25 @@ struct MenuBarView: View {
         }
         .padding(12)
         .frame(width: 360)
+    }
+}
+
+private struct PermissionDeniedNotice: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Permission denied", systemImage: "exclamationmark.lock").font(.headline)
+            Text("PerAppVolume can't change any app's volume without the \"System Audio Recording\" permission. Your apps keep playing normally.")
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Spacer()
+                Button("Open Privacy Settings") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AudioCapture") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
+        }
     }
 }
 
