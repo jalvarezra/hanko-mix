@@ -41,6 +41,16 @@ Run before each release on macOS 14, 15 and 26 — Apple Silicon, and Intel if p
 - [ ] With the EQ on, change the device's sample rate in Audio MIDI Setup: audio keeps playing correctly.
 - [ ] With AirPlay as the system default output, apps you haven't touched play normally.
 
+## System output and microphone
+
+- [ ] Switch the system output from the menu (e.g. headphones ↔ MacBook speakers): every app on "Automatic" moves; apps with an assigned output stay.
+- [ ] Switch the microphone from the menu: System Settings → Sound → Input shows the same device.
+- [ ] Move the mic gain slider: the Input volume in System Settings → Sound follows.
+- [ ] Mute and unmute the mic from the menu: the Input level meter in System Settings goes flat / comes back; the previous gain is restored.
+- [ ] A mic without volume control (e.g. an iPhone mic): the slider and mute button are disabled with an explanation.
+- [ ] Change the output, mic or mic gain in System Settings: the menu reflects it.
+- [ ] No orange microphone indicator appears from using these controls.
+
 ## Robustness
 
 - [ ] `kill -9` the app while it processes audio: every app immediately plays normally again.

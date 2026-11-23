@@ -19,6 +19,10 @@ final class AppState {
     private(set) var rows: [AppRow] = []
     private(set) var defaultDevice: OutputDevice?
     private(set) var selectableDevices: [OutputDevice] = []
+    private(set) var systemOutputDevices: [OutputDevice] = []
+    private(set) var inputDevices: [InputDevice] = []
+    private(set) var defaultInput: InputDevice?
+    private(set) var deviceError: String?
     private(set) var permissionNotice: PermissionGate.Notice?
     private(set) var settings: SettingsFile
 
@@ -30,6 +34,7 @@ final class AppState {
     @ObservationIgnored private var seenThisSession: [AppID: String] = [:]
     @ObservationIgnored private var icons: [AppID: NSImage] = [:]
     @ObservationIgnored private var permissionDeferred = false
+    @ObservationIgnored private var rememberedMicVolumes: [String: Float] = [:]
 
     init(store: SettingsStore, monitor: AudioSystemMonitor, coordinator: AudioCoordinator) {
         self.store = store
@@ -100,6 +105,45 @@ final class AppState {
         permissionNotice = nil
     }
 
+    // MARK: System devices
+
+    func setSystemOutput(_ uid: String) {
+        performDeviceWrite { try AudioDeviceControl.setDefaultOutput(uid: uid) }
+    }
+
+    func setSystemInput(_ uid: String) {
+        performDeviceWrite { try AudioDeviceControl.setDefaultInput(uid: uid) }
+    }
+
+    func setMicVolume(_ volume: Float) {
+        guard let uid = defaultInput?.uid else { return }
+        rememberedMicVolumes[uid] = nil   // a manual change replaces any pre-mute memory
+        performDeviceWrite { try AudioDeviceControl.setInputVolume(uid: uid, volume) }
+    }
+
+    func toggleMicMute() {
+        guard let mic = defaultInput else { return }
+        let (action, remember) = MicMuteStrategy.toggle(mic, rememberedVolume: rememberedMicVolumes[mic.uid])
+        rememberedMicVolumes[mic.uid] = remember
+        let uid = mic.uid
+        switch action {
+        case .setMute(let muted): performDeviceWrite { try AudioDeviceControl.setInputMute(uid: uid, muted) }
+        case .setVolume(let volume): performDeviceWrite { try AudioDeviceControl.setInputVolume(uid: uid, volume) }
+        case .unsupported: break
+        }
+    }
+
+    /// Runs a device write off the main thread; the next snapshot refreshes the UI.
+    private func performDeviceWrite(_ write: @escaping @Sendable () throws -> Void) {
+        deviceError = nil
+        coordinator.queue.async {
+            do { try write() } catch {
+                let message = "\(error)"
+                Task { @MainActor [weak self] in self?.deviceError = message }
+            }
+        }
+    }
+
     func deviceSettings(for uid: String) -> DeviceSettings { settings.devices[uid] ?? DeviceSettings() }
 
     func device(uid: String) -> OutputDevice? { snapshot.device(uid: uid) }
@@ -165,6 +209,10 @@ final class AppState {
     private func rebuildRows() {
         defaultDevice = snapshot.defaultOutputUID.flatMap { snapshot.device(uid: $0) }
         selectableDevices = snapshot.devices.filter(DeviceFilter.isSelectableAsAppOutput)
+        systemOutputDevices = snapshot.devices.filter(DeviceFilter.isSelectableAsSystemOutput)
+        if inputDevices != snapshot.inputDevices { inputDevices = snapshot.inputDevices }
+        let newDefaultInput = snapshot.defaultInputUID.flatMap { uid in snapshot.inputDevices.first { $0.uid == uid } }
+        if defaultInput != newDefaultInput { defaultInput = newDefaultInput }
         let playing = snapshot.apps.filter(\.isPlaying)
         let playingIDs = Set(playing.map(\.id))
         var result = playing.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }

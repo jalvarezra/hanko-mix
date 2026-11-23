@@ -1,6 +1,7 @@
 import PAVCore
 import SwiftUI
 
+/// System output picker plus EQ/mono toggles for the selected device.
 struct DeviceSectionView: View {
     let state: AppState
     let device: OutputDevice
@@ -8,12 +9,19 @@ struct DeviceSectionView: View {
     var body: some View {
         let settings = state.deviceSettings(for: device.uid)
         VStack(alignment: .leading, spacing: 6) {
-            Label(device.name, systemImage: "hifispeaker.fill").font(.callout.bold())
+            HStack(spacing: 6) {
+                Image(systemName: "hifispeaker.fill").foregroundStyle(.secondary).frame(width: 20)
+                Picker("Output", selection: Binding(get: { device.uid }, set: { state.setSystemOutput($0) })) {
+                    ForEach(state.systemOutputDevices, id: \.uid) { Text($0.name).tag($0.uid) }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .help("System output — where every app plays by default")
+            }
             HStack(spacing: 12) {
                 Toggle(isOn: Binding(get: { settings.eqEnabled },
                                      set: { on in state.updateDeviceSettings(device.uid) { $0.eqEnabled = on } })) {
-                    Text(settings.autoEQName.map { "EQ: \($0)" } ?? "EQ")
-                        .lineLimit(1)
+                    Text(settings.autoEQName.map { "EQ: \($0)" } ?? "EQ").lineLimit(1)
                 }
                 .disabled(settings.bands.isEmpty && settings.preampDB == 0)
                 .help(settings.bands.isEmpty ? "Set up an EQ in Settings" : "Toggle EQ")
@@ -29,6 +37,7 @@ struct DeviceSectionView: View {
             }
             .toggleStyle(.checkbox)
             .controlSize(.small)
+            .padding(.leading, 26)
         }
     }
 }

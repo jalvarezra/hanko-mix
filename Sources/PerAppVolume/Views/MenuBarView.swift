@@ -31,6 +31,14 @@ struct MenuBarView: View {
             Divider()
             if let device = state.defaultDevice {
                 DeviceSectionView(state: state, device: device)
+            }
+            if let mic = state.defaultInput {
+                MicrophoneSectionView(state: state, mic: mic)
+            }
+            if let error = state.deviceError {
+                Text(error).font(.caption).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
+            }
+            if state.defaultDevice != nil || state.defaultInput != nil {
                 Divider()
             }
             HStack {

@@ -12,6 +12,8 @@ It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no k
 - **Per-app output** — send Spotify to your headphones and Zoom to your speakers.
 - **Per-device EQ** — up to 10 parametric bands plus preamp, and a searchable catalog of ~6,000 [AutoEQ](https://github.com/jaakkopasanen/AutoEq) headphone presets.
 - **Balance and mono** per output device.
+- **Quick device switching** — pick the system output and microphone right from the menu.
+- **Microphone gain and mute** from the menu (no microphone permission needed; PerAppVolume never listens to it).
 - **Remembers each app's settings** and applies them when it plays again.
 - **Hands off by default** — an app you haven't touched is never intercepted, so its sound is bit-identical and adds no latency.
 
