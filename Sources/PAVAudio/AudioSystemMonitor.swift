@@ -28,7 +28,8 @@ public final class AudioSystemMonitor: @unchecked Sendable {
         let defaultUID = defaultID == 0 ? nil : try? defaultID.readString(kAudioDevicePropertyDeviceUID)
         let processes = try audioProcesses(knownDevices: devices.ids)
         let apps = AppGrouper.group(processes, ownPID: getpid(), resolver: resolver)
-        return SystemSnapshot(apps: apps, devices: devices.list, defaultOutputUID: defaultUID)
+        return SystemSnapshot(apps: apps, devices: devices.list, defaultOutputUID: defaultUID,
+                              ownProcessObjectIDs: ownProcessObjectID().map { [$0] } ?? [])
     }
 
     private func outputDevices() throws -> (list: [OutputDevice], ids: [AudioObjectID: String]) {
@@ -56,6 +57,15 @@ public final class AudioSystemMonitor: @unchecked Sendable {
             return AudioProcessInfo(objectID: id, pid: pid, bundleID: bundleID, executablePath: resolver.executablePath(for: pid),
                                     isRunningOutput: running, outputDeviceUIDs: deviceIDs.compactMap { knownDevices[$0] })
         }
+    }
+
+    private func ownProcessObjectID() -> AudioObjectID? {
+        var addr = address(kAudioHardwarePropertyTranslatePIDToProcessObject)
+        var pid = getpid()
+        var object = AudioObjectID(kAudioObjectUnknown)
+        var size = UInt32(MemoryLayout<AudioObjectID>.size)
+        let status = AudioObjectGetPropertyData(.system, &addr, UInt32(MemoryLayout<pid_t>.size), &pid, &size, &object)
+        return status == noErr && object != kAudioObjectUnknown ? object : nil
     }
 
     static func transportKind(_ value: UInt32) -> TransportKind {

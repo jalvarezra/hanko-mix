@@ -57,7 +57,7 @@ public final class TapEngine: @unchecked Sendable {
                         failures[spec.kind] = (spec, "Could not update the audio tap: \(error)")
                     }
                 }
-            } else if let failure = failures[spec.kind], failure.spec == spec {
+            } else if let failure = failures[spec.kind], failure.spec.structuralKey == spec.structuralKey {
                 continue   // don't retry in a loop until something changes
             } else {
                 failures[spec.kind] = nil

@@ -14,6 +14,17 @@ public enum ProcessingRule {
         return automaticOutputUID(for: app, snapshot: snapshot)
     }
 
+    /// True when the app's own settings (volume, mute, routing) change its sound, so
+    /// it needs a tap of its own. Device EQ/balance/mono alone is handled by the
+    /// device's "rest" tap instead.
+    public static func needsOwnTap(app: AppGroup, settings: AppSettings?, snapshot: SystemSnapshot) -> Bool {
+        guard let s = settings else { return false }
+        if s.volume != 1 || s.muted { return true }
+        if let effective = effectiveOutputUID(for: app, settings: s, snapshot: snapshot),
+           effective != automaticOutputUID(for: app, snapshot: snapshot) { return true }
+        return false
+    }
+
     public static func needsProcessing(app: AppGroup, settings: AppSettings?, deviceSettings: [String: DeviceSettings], snapshot: SystemSnapshot) -> Bool {
         let effective = effectiveOutputUID(for: app, settings: settings, snapshot: snapshot)
         if let s = settings {

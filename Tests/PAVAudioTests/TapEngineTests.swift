@@ -138,3 +138,13 @@ private let params: @Sendable (TapKind) -> ChainParameters = { _ in
     engine.shutdown()
     #expect(backend.calls == [.stopIO, .destroyAggregate, .destroyTap])
 }
+
+@Test func failedSpecIsNotRetriedWhenOnlyHelpersChange() {
+    let backend = FakeAudioBackend()
+    backend.failOn = [.createAggregate]
+    let engine = TapEngine(backend: backend)
+    engine.reconcile(desired: [spec([1, 2])], parameters: params)
+    backend.calls = []
+    engine.reconcile(desired: [spec([1, 2, 3])], parameters: params)
+    #expect(backend.calls.isEmpty)
+}

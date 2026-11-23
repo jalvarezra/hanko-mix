@@ -44,8 +44,10 @@ public enum TapPlanner {
         for app in snapshot.apps {
             let settings = appSettings[app.id]
             let kept = keepAlive.contains(app.id)
-            let needs = ProcessingRule.needsProcessing(app: app, settings: settings, deviceSettings: deviceSettings, snapshot: snapshot)
-            guard (needs && app.isPlaying) || kept,
+            // Apps with their own settings keep their tap while their process exists
+            // (playing or paused), so they never play unprocessed on resume.
+            let needs = ProcessingRule.needsOwnTap(app: app, settings: settings, snapshot: snapshot)
+            guard needs || kept,
                   let output = ProcessingRule.effectiveOutputUID(for: app, settings: settings, snapshot: snapshot),
                   let device = snapshot.device(uid: output) else { continue }
             specs.append(TapSpec(kind: .app(app.id), processObjectIDs: app.processObjectIDs, exclusive: false,
@@ -60,7 +62,8 @@ public enum TapPlanner {
                     && ProcessingRule.automaticOutputUID(for: $0, snapshot: snapshot) == device.uid
             }
             guard inUse else { continue }
-            specs.append(TapSpec(kind: .rest(deviceUID: device.uid), processObjectIDs: tappedProcesses, exclusive: true,
+            specs.append(TapSpec(kind: .rest(deviceUID: device.uid),
+                                 processObjectIDs: tappedProcesses.union(snapshot.ownProcessObjectIDs), exclusive: true,
                                  outputDeviceUID: device.uid, outputSampleRate: device.sampleRate))
         }
         return specs

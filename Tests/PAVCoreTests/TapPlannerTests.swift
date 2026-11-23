@@ -94,3 +94,24 @@ private func settings(volume: Float = 1, output: String? = nil) -> AppSettings {
     c.processObjectIDs = [1, 2]
     #expect(a.structuralKey == c.structuralKey)
 }
+
+@Test func pausedAppWithLoweredVolumeKeepsItsTap() {
+    let plan = TapPlanner.plan(snapshot: snapshot([spotify(playing: false)]), appSettings: [spotifyID: settings(volume: 0.2)], deviceSettings: [:], keepAlive: [])
+    #expect(plan.map(\.kind) == [.app(spotifyID)])
+}
+
+@Test func deviceEQAloneDoesNotCreatePerAppTaps() {
+    var eq = DeviceSettings()
+    eq.mono = true
+    let plan = TapPlanner.plan(snapshot: snapshot([spotify()]), appSettings: [:], deviceSettings: ["builtin": eq], keepAlive: [])
+    #expect(plan.map(\.kind) == [.rest(deviceUID: "builtin")])
+}
+
+@Test func restTapAlwaysExcludesOwnProcess() {
+    var eq = DeviceSettings()
+    eq.mono = true
+    var snap = snapshot([spotify()])
+    snap.ownProcessObjectIDs = [99]
+    let plan = TapPlanner.plan(snapshot: snap, appSettings: [:], deviceSettings: ["builtin": eq], keepAlive: [])
+    #expect(plan.first?.processObjectIDs == [99])
+}
