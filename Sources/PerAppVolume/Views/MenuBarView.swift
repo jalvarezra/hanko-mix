@@ -3,6 +3,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @Bindable var state: AppState
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -33,7 +34,7 @@ struct MenuBarView: View {
                 Divider()
             }
             HStack {
-                SettingsLink { Text("Settings…") }
+                Button("Settings…") { SettingsWindowPresenter.open(openSettings) }
                 Spacer()
                 Button("Quit") { NSApplication.shared.terminate(nil) }
             }
