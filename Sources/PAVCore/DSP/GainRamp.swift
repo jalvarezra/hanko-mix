@@ -24,6 +24,15 @@ public struct GainRamp: Sendable {
         totalFrames = current == gain ? 0 : rampFrames
     }
 
+    /// Sets the gain immediately, with no ramp.
+    public mutating func jump(to gain: Float) {
+        current = gain
+        start = gain
+        target = gain
+        elapsedFrames = 0
+        totalFrames = 0
+    }
+
     public mutating func apply(to buffer: UnsafeMutablePointer<Float>, frames: Int, channels: Int) {
         var index = 0
         for _ in 0..<frames {

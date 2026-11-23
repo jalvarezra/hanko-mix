@@ -55,23 +55,30 @@ public final class ProcessingChain: @unchecked Sendable {
         prepared.bank = CoefficientBank(bands: p.device.bands, sampleRate: p.sampleRate)
         prepared.balance = p.device.balance
         prepared.mono = p.device.mono && channels == 2
-        let maxBandGain = p.device.bands.filter(\.enabled).map(\.gainDB).max() ?? 0
-        prepared.limiterEnabled = prepared.targetGain > 1
-            || (p.device.eqEnabled && p.device.preampDB + max(0, maxBandGain) > 0)
+        // Overlapping bands can add up beyond any single band's gain, so any active EQ
+        // gets the limiter (it is the identity below -1 dBFS).
+        prepared.limiterEnabled = prepared.targetGain > 1 || (p.device.eqEnabled && prepared.bank.count > 0)
         slot.publish(prepared)
     }
 
     public func process(input: UnsafePointer<Float>, output: UnsafeMutablePointer<Float>, frames: Int) {
         let p = slot.consumeLatest()
         if p.version != appliedVersion {
+            if appliedVersion == 0 {
+                // First parameters for this tap: start at the target instead of fading
+                // from 100 %, so a muted or lowered app never blasts on resume.
+                ramp.jump(to: p.targetGain)
+            } else {
+                ramp.setTarget(p.targetGain)
+            }
             appliedVersion = p.version
-            ramp.setTarget(p.targetGain)
         }
         let samples = frames * channels
         output.update(from: input, count: samples)
         // Transparent bypass: unity gain, nothing active, ramp settled.
         if !p.deviceActive && ramp.isSettled && ramp.current == 1 { return }
 
+        let gainBefore = ramp.current
         ramp.apply(to: output, frames: frames, channels: channels)
         if p.eqEnabled {
             if p.preamp != 1 {
@@ -82,7 +89,9 @@ public final class ProcessingChain: @unchecked Sendable {
         if channels == 2 && (p.balance != 0 || p.mono) {
             BalanceMono.apply(output, frames: frames, balance: p.balance, mono: p.mono)
         }
-        if p.limiterEnabled || ramp.current > 1 {
+        // Check the gain at both ends of the buffer: a ramp from >100 % down to
+        // <=100 % still had samples above unity at the start of this buffer.
+        if p.limiterEnabled || max(gainBefore, ramp.current) > 1 {
             limiter.process(output, count: samples)
         }
     }
