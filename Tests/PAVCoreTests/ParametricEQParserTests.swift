@@ -57,3 +57,19 @@ private let catalog = AutoEQCatalog(entries: [
     try JSONEncoder().encode(catalog.entries).write(to: url)
     #expect(try AutoEQCatalog.loadBundled(from: url).entries == catalog.entries)
 }
+
+@Test func locatesCatalogInsideAppStyleResourceBundle() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("pav-locate-\(UUID())")
+    let nested = root.appendingPathComponent("X.bundle/Contents/Resources")
+    try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+    try Data("[]".utf8).write(to: nested.appendingPathComponent("autoeq.json"))
+    #expect(AutoEQCatalog.locate(bundleName: "X.bundle", searchRoots: [root])?.lastPathComponent == "autoeq.json")
+}
+
+@Test func locatesCatalogInFlatResourceBundle() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent("pav-locate-\(UUID())")
+    let flat = root.appendingPathComponent("X.bundle")
+    try FileManager.default.createDirectory(at: flat, withIntermediateDirectories: true)
+    try Data("[]".utf8).write(to: flat.appendingPathComponent("autoeq.json"))
+    #expect(AutoEQCatalog.locate(bundleName: "X.bundle", searchRoots: [URL(fileURLWithPath: "/nonexistent"), root]) != nil)
+}

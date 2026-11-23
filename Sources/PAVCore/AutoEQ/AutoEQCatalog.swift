@@ -31,6 +31,22 @@ public struct AutoEQCatalog: Sendable {
         AutoEQCatalog(entries: try JSONDecoder().decode([AutoEQEntry].self, from: Data(contentsOf: url)))
     }
 
+    /// Finds `autoeq.json` inside a SwiftPM resource bundle under any of `searchRoots`,
+    /// supporting both the flat layout (`swift run`) and the `Contents/Resources`
+    /// layout (copied into an `.app`).
+    public static func locate(bundleName: String, searchRoots: [URL]) -> URL? {
+        for root in searchRoots {
+            let bundleURL = root.appendingPathComponent(bundleName)
+            if let url = Bundle(url: bundleURL)?.url(forResource: "autoeq", withExtension: "json") { return url }
+            for candidate in [bundleURL.appendingPathComponent("Contents/Resources/autoeq.json"),
+                              bundleURL.appendingPathComponent("autoeq.json")]
+            where FileManager.default.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+        }
+        return nil
+    }
+
     /// Case- and accent-insensitive token search; names starting with the query rank first.
     public func search(_ query: String, limit: Int = 20) -> [AutoEQEntry] {
         let q = Self.normalize(query)
