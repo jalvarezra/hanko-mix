@@ -1,201 +1,201 @@
-# Volumen por app para macOS — Diseño (v1)
+# Per-app volume for macOS — Design (v1)
 
-*Fecha: 2026-11-23 · Estado: borrador para aprobación*
-*Nombre del proyecto: por decidir (en el código se usa provisionalmente `PerAppVolume`).*
+*Date: 2026-11-23 · Status: draft for approval*
+*Project name: to be decided (the code provisionally uses `PerAppVolume`).*
 
-## 1. Intención y porqué
+## 1. Intent and why
 
-Una alternativa **gratuita y opensource** a las apps comerciales de volumen por app para macOS: una app de barra de menú que controla el audio de cada aplicación por separado. "Mejorada" significa, en esta versión, abierta, sin licencia de pago ni limitaciones artificiales, y fiable.
+A **free and open-source** alternative to commercial per-app volume apps for macOS: a menu bar app that controls the audio of each application separately. In this version, "improved" means open, with no paid license or artificial limitations, and reliable.
 
-La función que el usuario más usa es **regular el volumen por app**. Esa es la pieza que tiene que funcionar perfecta. El resto de funciones de la v1 se construye alrededor.
+The feature the user uses most is **adjusting volume per app**. That is the piece that has to work perfectly. The rest of the v1 features are built around it.
 
-## 3. Objetivos (v1)
+## 3. Goals (v1)
 
-1. **Volumen y mute por app** *(lo central)*.
-   - Un slider por cada app que está sonando o ha sonado en esta sesión, de 0 % a 200 %.
-   - Por encima del 100 % se aplica un limitador suave para evitar saturación digital.
-   - Botón de mute por app.
-2. **Salida por app**: enviar una app a un dispositivo de salida distinto del predeterminado.
-3. **EQ por dispositivo de salida**.
-   - EQ paramétrico por dispositivo, con buscador de presets AutoEQ por modelo de auriculares.
-   - Se puede activar y desactivar.
-4. **Balance y mono** por dispositivo de salida.
-5. **Recordar ajustes por app**.
-   - Volumen, mute y salida se guardan por *bundle ID* y se aplican solos cuando la app vuelve a sonar.
-   - Los ajustes de EQ, balance y mono se guardan por *UID* de dispositivo.
-6. **Opensource** desde el primer commit: repo público, instrucciones de compilación y licencia.
+1. **Per-app volume and mute** *(the core)*.
+   - One slider for each app that is playing or has played in this session, from 0 % to 200 %.
+   - Above 100 % a soft limiter is applied to avoid digital clipping.
+   - Per-app mute button.
+2. **Per-app output**: send an app to an output device other than the default.
+3. **Per-output-device EQ**.
+   - Parametric EQ per device, with an AutoEQ preset search by headphone model.
+   - Can be turned on and off.
+4. **Balance and mono** per output device.
+5. **Remember per-app settings**.
+   - Volume, mute and output are saved per *bundle ID* and applied automatically when the app plays again.
+   - EQ, balance and mono settings are saved per device *UID*.
+6. **Open source** from the first commit: public repo, build instructions and license.
 
-## 4. No-objetivos (para después de la v1)
+## 4. Non-goals (for after v1)
 
-- EQ por app.
-- Atajos de teclado globales y control por MIDI.
-- Control de Apple Music, AppleScript o URL scheme.
-- Procesar el micrófono o la entrada de audio.
-- Grabación, efectos o plugins AU de terceros.
-- Soporte de macOS anterior a 14.4.
-- **AirPlay y dispositivos multisalida como salida por app** (decisión del usuario). No aparecen en el menú de salida por app.
-  - Motivo: como dispositivo principal de un aggregate añaden unos 2 s de latencia y su reloj no es fiable.
-  - Si la salida por defecto del sistema es AirPlay, las apps sin tocar suenan normal, porque no se interceptan. Las que tienen ajustes propios siguen funcionando en modo "mejor esfuerzo", y se avisa de que puede haber retraso.
-- Distribución por Mac App Store.
+- Per-app EQ.
+- Global keyboard shortcuts and MIDI control.
+- Apple Music control, AppleScript or URL scheme.
+- Processing the microphone or audio input.
+- Recording, effects or third-party AU plugins.
+- Support for macOS earlier than 14.4.
+- **AirPlay and multi-output devices as per-app output** (user's decision). They do not appear in the per-app output menu.
+  - Reason: as the main device of an aggregate they add about 2 s of latency and their clock is not reliable.
+  - If the system default output is AirPlay, untouched apps play normally, because they are not intercepted. Those with their own settings keep working in "best effort" mode, and the user is warned that there may be delay.
+- Distribution through the Mac App Store.
 
-## 5. Anti-objetivos (fallaría aunque "funcione")
+## 5. Anti-goals (it would fail even if it "works")
 
-- **Alterar el audio en reposo.** Si el usuario no ha tocado nada, el sonido debe ser bit-idéntico y sin latencia añadida. Una app con volumen al 100 %, sin mute, en su salida por defecto y sin EQ, balance ni mono activos en ese dispositivo **no se intercepta**.
-- **Dejar al usuario sin sonido.**
-  - Si la app se cierra o se cuelga, todo debe volver a sonar normal. Los taps y aggregates privados mueren con el proceso.
-  - Si falla la creación de un tap o un aggregate, esa app sigue sonando sin procesar y se muestra un aviso discreto. Nunca queda en silencio.
-- **Cortes, clics o desincronización** audibles al mover un slider, al conectar o desconectar auriculares o al cambiar la salida por defecto.
-- **Instalar drivers, kexts o pedir contraseña de administrador.**
-- **Copiar código o recursos de otras apps.**
+- **Altering audio at rest.** If the user has not touched anything, the sound must be bit-identical with no added latency. An app at 100 % volume, not muted, on its default output and with no EQ, balance or mono active on that device **is not intercepted**.
+- **Leaving the user without sound.**
+  - If the app quits or crashes, everything must go back to sounding normal. Private taps and aggregates die with the process.
+  - If creating a tap or an aggregate fails, that app keeps playing unprocessed and a discreet warning is shown. It is never left silent.
+- Audible **dropouts, clicks or desync** when moving a slider, when connecting or disconnecting headphones, or when changing the default output.
+- **Installing drivers, kexts or asking for an administrator password.**
+- **Copying code or resources from other apps.**
 
-## 6. Restricciones
+## 6. Constraints
 
-- macOS **14.4 o superior**. `CATapDescription` existe desde 14.2, pero el permiso de captura de audio (`NSAudioCaptureUsageDescription`) se asienta en 14.4. *Decisión mía*: subir el mínimo a 14.4 evita una ruta de permisos aparte. Si las pruebas lo exigen, el builder puede subirlo a 14.6. Hay que probar en 14.x, 15.x y 26.x.
-- Apple Silicon y también Intel (binario universal). No hay dependencias que lo impidan.
-- **Permiso de captura de audio del sistema**: requiere `NSAudioCaptureUsageDescription`. La primera vez que se crea un tap, macOS pide permiso al usuario. La app debe explicar antes por qué lo necesita y manejar el caso de permiso denegado.
-- **Sandbox**: Una app con process taps puede funcionar en sandbox con `com.apple.security.device.audio-input`. La v1 puede ir con o sin sandbox; *decisión del builder*, preferiblemente con sandbox si no da problemas.
-- **Firma y notarización**: sin una cuenta de Apple Developer, la app abre con aviso de Gatekeeper. *Decisión pendiente del usuario* (ver §11); no cambia el código.
+- macOS **14.4 or later**. `CATapDescription` exists since 14.2, but the audio capture permission (`NSAudioCaptureUsageDescription`) settles in 14.4. *My decision*: raising the minimum to 14.4 avoids a separate permissions path. If testing requires it, the builder can raise it to 14.6. It must be tested on 14.x, 15.x and 26.x.
+- Apple Silicon and also Intel (universal binary). There are no dependencies that prevent it.
+- **System audio capture permission**: requires `NSAudioCaptureUsageDescription`. The first time a tap is created, macOS asks the user for permission. The app must explain beforehand why it needs it and handle the permission-denied case.
+- **Sandbox**: An app using process taps can run sandboxed with `com.apple.security.device.audio-input`. v1 can ship with or without sandbox; *builder's decision*, preferably sandboxed if it causes no problems.
+- **Signing and notarization**: without an Apple Developer account, the app opens with a Gatekeeper warning. *Pending user decision* (see §11); it does not change the code.
 
-## 7. Enfoques considerados
+## 7. Approaches considered
 
-| Enfoque | Qué supone | Veredicto |
+| Approach | What it involves | Verdict |
 |---|---|---|
-| **A. App nativa Swift, un solo proceso** | SwiftUI `MenuBarExtra`. La misma app crea los taps y aggregates y procesa el audio en el callback de Core Audio. | **Elegido por el usuario.** Es lo más simple y no puede dejarte sin sonido: al morir el proceso, macOS destruye los taps privados. |
-| B. App + agente en segundo plano (XPC) | La interfaz y el motor de audio van en procesos separados. | Descartado para la v1: el doble de piezas para una ventaja (reiniciar la UI sin cortar el audio) que todavía no hace falta. Se puede separar más adelante. |
-| C. Driver HAL virtual | Como Background Music o eqMac. | Descartado: exige instalar un driver con privilegios de administrador, suele romperse con las actualizaciones de macOS y choca con los anti-objetivos. |
+| **A. Native Swift app, single process** | SwiftUI `MenuBarExtra`. The same app creates the taps and aggregates and processes the audio in the Core Audio callback. | **Chosen by the user.** It is the simplest and cannot leave you without sound: when the process dies, macOS destroys the private taps. |
+| B. App + background agent (XPC) | The interface and the audio engine run in separate processes. | Discarded for v1: twice the pieces for an advantage (restarting the UI without cutting audio) that is not needed yet. It can be split later. |
+| C. Virtual HAL driver | Like Background Music or eqMac. | Discarded: requires installing a driver with administrator privileges, tends to break with macOS updates and clashes with the anti-goals. |
 
-## 8. Diseño (lo decidido)
+## 8. Design (what was decided)
 
-### 8.1 Piezas
+### 8.1 Pieces
 
-- **`AudioSystem`**: observa Core Audio.
-  - Dispositivos de salida, salida por defecto y lista de procesos de audio (`kAudioHardwarePropertyProcessObjectList`).
-  - De cada proceso lee PID, *bundle ID* y si está reproduciendo (`kAudioProcessPropertyIsRunningOutput`).
-  - Publica cambios mediante listeners, nunca por sondeo.
-- **`AppGrouper`**: agrupa procesos en "apps" tal como las ve el usuario.
-  - Los procesos auxiliares (por ejemplo "Google Chrome Helper (Renderer)", WebKit/Safari, Electron) se asignan a su app principal mediante el proceso responsable o la jerarquía de bundles.
-  - La UI muestra una fila por app, no por proceso.
-- **`TapEngine`**: crea y destruye taps y aggregate devices privados, y gestiona los callbacks de audio.
-- **`DSP`**: cadena de procesado en tiempo real.
-  - Ganancia con rampa (sin clics), limitador suave para más del 100 %, EQ paramétrico con biquads (vDSP) y matriz de balance/mono.
-  - El código del callback no reserva memoria ni toma locks. Los parámetros se pasan con estructuras atómicas o *lock-free*.
-- **`SettingsStore`**: persistencia.
-  - JSON en `~/Library/Application Support/<app>/`.
-  - Por *bundle ID*: volumen, mute y UID de salida. Por UID de dispositivo: EQ, balance y mono.
-- **`AutoEQCatalog`**: índice de presets paramétricos de AutoEQ, buscable por modelo.
-- **UI**: `MenuBarExtra` en SwiftUI más una ventana de ajustes.
+- **`AudioSystem`**: observes Core Audio.
+  - Output devices, default output and list of audio processes (`kAudioHardwarePropertyProcessObjectList`).
+  - For each process it reads PID, *bundle ID* and whether it is playing (`kAudioProcessPropertyIsRunningOutput`).
+  - Publishes changes through listeners, never by polling.
+- **`AppGrouper`**: groups processes into "apps" as the user sees them.
+  - Helper processes (for example "Google Chrome Helper (Renderer)", WebKit/Safari, Electron) are assigned to their main app via the responsible process or the bundle hierarchy.
+  - The UI shows one row per app, not per process.
+- **`TapEngine`**: creates and destroys private taps and aggregate devices, and manages the audio callbacks.
+- **`DSP`**: real-time processing chain.
+  - Ramped gain (no clicks), soft limiter for more than 100 %, parametric EQ with biquads (vDSP) and balance/mono matrix.
+  - The callback code does not allocate memory or take locks. Parameters are passed with atomic or *lock-free* structures.
+- **`SettingsStore`**: persistence.
+  - JSON in `~/Library/Application Support/<app>/`.
+  - Per *bundle ID*: volume, mute and output UID. Per device UID: EQ, balance and mono.
+- **`AutoEQCatalog`**: index of AutoEQ parametric presets, searchable by model.
+- **UI**: SwiftUI `MenuBarExtra` plus a settings window.
 
-### 8.2 Cuándo se intercepta una app (regla central)
+### 8.2 When an app is intercepted (core rule)
 
-Una app **necesita procesado** si cumple cualquiera de estas condiciones:
+An app **needs processing** if it meets any of these conditions:
 
-- volumen ≠ 100 %
-- está en mute
-- tiene una salida asignada distinta de la salida por defecto
-- su dispositivo de salida efectivo tiene EQ, balance o mono activos
+- volume ≠ 100 %
+- it is muted
+- it has an assigned output different from the default output
+- its effective output device has EQ, balance or mono active
 
-Si no necesita procesado, no se crea ningún tap para ella.
+If it does not need processing, no tap is created for it.
 
-**Transiciones sin cortes** *(decisión mía)*.
-- Un tap se **crea** la primera vez que una app necesita procesado. Ese único momento puede producir un corte breve.
-- El tap **no se destruye** al volver a los valores por defecto. Se mantiene vivo, en modo transparente (ganancia 1.0, sin DSP), hasta que la app deja de sonar. Solo entonces se libera.
-- Así, mover un slider de 100 % → 99 % → 100 % nunca recrea nada.
-- El test de "no ensuciar" (§9) se define así: *una app que no se ha tocado desde que empezó a sonar no tiene tap*.
+**Seamless transitions** *(my decision)*.
+- A tap is **created** the first time an app needs processing. That single moment may produce a brief dropout.
+- The tap is **not destroyed** when returning to default values. It is kept alive, in transparent mode (gain 1.0, no DSP), until the app stops playing. Only then is it released.
+- That way, moving a slider 100 % → 99 % → 100 % never recreates anything.
+- The "don't taint" test (§9) is defined as: *an app that has not been touched since it started playing has no tap*.
 
-**Procesos auxiliares que aparecen y desaparecen** (Chrome, Electron).
-- No se recrea el tap. Se actualiza su lista de procesos en caliente escribiendo `kAudioTapPropertyDescription`.
-- El aggregate device no cambia.
+**Helper processes that appear and disappear** (Chrome, Electron).
+- The tap is not recreated. Its process list is updated live by writing `kAudioTapPropertyDescription`.
+- The aggregate device does not change.
 
-**Dispositivo de salida efectivo de una app** *(decisión mía)*.
-- Si el usuario no ha asignado salida, el tap sale por el **dispositivo que la app está usando realmente**, leído de las propiedades del proceso en Core Audio. Si una app como Zoom eligió unos auriculares USB en sus propios ajustes, cambiarle el volumen no la desvía a la salida por defecto.
-- En el menú de salida por app, la opción por defecto se llama "Automática (la que use la app)".
-- Si un proceso usa varios dispositivos a la vez, se toma el primero y se registra el caso como limitación conocida.
+**Effective output device of an app** *(my decision)*.
+- If the user has not assigned an output, the tap goes out through the **device the app is actually using**, read from the process properties in Core Audio. If an app like Zoom chose some USB headphones in its own settings, changing its volume does not divert it to the default output.
+- In the per-app output menu, the default option is called "Automatic (whatever the app uses)".
+- If a process uses several devices at once, the first one is taken and the case is recorded as a known limitation.
 
-### 8.3 Topología de taps
+### 8.3 Tap topology
 
-**Apps con ajustes propios** (volumen, mute o salida): un tap por app.
-- `CATapDescription` con los objetos de proceso de esa app, privado y con `muteBehavior = mutedWhenTapped`.
-- Ese tap va en un aggregate device privado cuyo *main/clock device* es el dispositivo de salida efectivo de la app, con drift compensation activada.
-- El IOProc del aggregate lee el audio del tap, aplica ganancia y luego la cadena del dispositivo (EQ, balance, mono), y escribe en la salida.
+**Apps with their own settings** (volume, mute or output): one tap per app.
+- `CATapDescription` with the process objects of that app, private and with `muteBehavior = mutedWhenTapped`.
+- That tap goes into a private aggregate device whose *main/clock device* is the app's effective output device, with drift compensation enabled.
+- The aggregate's IOProc reads the audio from the tap, applies gain and then the device chain (EQ, balance, mono), and writes to the output.
 
-**Dispositivos con EQ, balance o mono activos**: además, un tap de "resto" por dispositivo.
-- Tap exclusivo (`exclusive = true`) **atado a ese dispositivo**, con `CATapDescription(excludingProcesses:andDeviceUID:withStream:)`. Captura *todas las apps que suenan por él excepto* las que ya tienen tap propio. Solo se crea si ese dispositivo es la salida por defecto, o si alguna app va a él.
-- Pasa por la cadena del dispositivo y sale por él.
+**Devices with EQ, balance or mono active**: additionally, one "rest" tap per device.
+- Exclusive tap (`exclusive = true`) **bound to that device**, with `CATapDescription(excludingProcesses:andDeviceUID:withStream:)`. It captures *all apps playing through it except* those that already have their own tap. It is only created if that device is the default output, or if some app goes to it.
+- It passes through the device chain and goes out through it.
 
-**Reconstrucción**: los taps y aggregates se recrean solo cuando cambia su composición (procesos o dispositivo). Mover un slider solo cambia parámetros del DSP y nunca recrea nada.
+**Rebuilding**: taps and aggregates are recreated only when their composition changes (processes or device). Moving a slider only changes DSP parameters and never recreates anything.
 
-**Limpieza al arrancar**: se eliminan aggregates y taps con el prefijo de UID de la app que hayan quedado de una ejecución anterior (por ejemplo, tras un crash).
+**Cleanup at launch**: aggregates and taps with the app's UID prefix left over from a previous run (for example, after a crash) are removed.
 
-### 8.4 Eventos del sistema
+### 8.4 System events
 
-- **Una app empieza o deja de sonar**: aparece o desaparece de la lista, y se aplican sus ajustes guardados.
-- **Una app se cierra**: se destruye su tap y se conservan sus ajustes.
-- **Cambia la salida por defecto**: se recrean los aggregates afectados hacia el nuevo dispositivo.
-- **Se desconecta un dispositivo asignado** (por ejemplo, auriculares Bluetooth): las apps asignadas pasan temporalmente a la salida por defecto. Cuando el dispositivo vuelve, regresan a él. La asignación guardada no se pierde.
-- **Cambia la frecuencia de muestreo del dispositivo**: se recrea el aggregate y los coeficientes del EQ se recalculan.
+- **An app starts or stops playing**: it appears in or disappears from the list, and its saved settings are applied.
+- **An app quits**: its tap is destroyed and its settings are kept.
+- **The default output changes**: the affected aggregates are recreated towards the new device.
+- **An assigned device is disconnected** (for example, Bluetooth headphones): the assigned apps temporarily move to the default output. When the device comes back, they return to it. The saved assignment is not lost.
+- **The device sample rate changes**: the aggregate is recreated and the EQ coefficients are recalculated.
 
-### 8.4b Latencia *(decisión mía)*
+### 8.4b Latency *(my decision)*
 
-- **Objetivo**: como máximo ~20 ms de latencia añadida en salidas integradas, USB o con cable mientras una app está procesada. Con eso, vídeo y videollamadas no se desincronizan de forma apreciable.
-- Usar buffers de E/S pequeños y una cadena DSP ligera dentro del callback.
-- En Bluetooth la latencia ya es grande por el propio dispositivo. El objetivo es no sumar más de esos ~20 ms.
-- Si una implementación con AudioUnits no cumple el objetivo, se usan biquads propios con vDSP.
+- **Target**: at most ~20 ms of added latency on built-in, USB or wired outputs while an app is processed. With that, video and video calls do not drift out of sync noticeably.
+- Use small I/O buffers and a lightweight DSP chain inside the callback.
+- On Bluetooth the latency is already large because of the device itself. The goal is not to add more than those ~20 ms.
+- If an implementation with AudioUnits does not meet the target, custom biquads with vDSP are used.
 
-### 8.5 Interfaz (boceto)
+### 8.5 Interface (sketch)
 
 ```
 ┌─────────────────────────────────────┐
-│ 🔊 Salida: AirPods Pro         ▾    │
+│ 🔊 Output: AirPods Pro         ▾    │
 │ ─────────────────────────────────── │
 │ [Spotify]   ━━━━━━━━●━━━  80%  🔇 ▾ │
 │ [Chrome]    ━━━━━━━━━━━●  100% 🔇 ▾ │
-│ [Zoom]      ━━━━━━━━━━━━━●140% 🔇 ▾ │  ▾ = elegir salida de esa app
+│ [Zoom]      ━━━━━━━━━━━━━●140% 🔇 ▾ │  ▾ = choose that app's output
 │ ─────────────────────────────────── │
 │ AirPods Pro: EQ AutoEQ ✓  Bal ◦  Mono ☐ │
-│ Ajustes…                     Salir  │
+│ Settings…                     Quit  │
 └─────────────────────────────────────┘
 ```
 
-- La lista muestra las apps que están sonando arriba y, atenuadas, las que sonaron hace poco.
-- Doble clic en un slider lo devuelve al 100 %.
-- **Ventana de ajustes**:
-  - pestaña por dispositivo: EQ paramétrico con buscador AutoEQ, balance y mono
-  - lista de apps recordadas, con opción de olvidarlas
-  - arrancar al iniciar sesión, con `SMAppService`
-  - explicación del permiso de audio
+- The list shows the apps that are playing at the top and, dimmed, those that played recently.
+- Double-clicking a slider returns it to 100 %.
+- **Settings window**:
+  - a tab per device: parametric EQ with AutoEQ search, balance and mono
+  - list of remembered apps, with an option to forget them
+  - launch at login, with `SMAppService`
+  - explanation of the audio permission
 
 ### 8.6 AutoEQ
 
-- Los presets paramétricos se generan **en tiempo de compilación** a partir del repo de AutoEQ (jaakkopasanen/AutoEq) como un JSON compacto empaquetado en la app.
-- No se descarga nada en tiempo de ejecución.
-- Se cita la licencia y la fuente en los créditos. *Verificar la licencia exacta de los datos antes de empaquetarlos.*
-- Plan B si los datos no se pueden empaquetar *(decisión mía)*: la v1 sale sin el buscador AutoEQ, solo con EQ paramétrico manual, y se añade la importación de un fichero `ParametricEQ.txt` de AutoEQ que el usuario se descarga él mismo. Nada se descarga automáticamente.
+- Parametric presets are generated **at build time** from the AutoEQ repo (jaakkopasanen/AutoEq) as a compact JSON bundled in the app.
+- Nothing is downloaded at runtime.
+- The license and source are cited in the credits. *Verify the exact license of the data before bundling it.*
+- Plan B if the data cannot be bundled *(my decision)*: v1 ships without the AutoEQ search, only with manual parametric EQ, and adds import of an AutoEQ `ParametricEQ.txt` file that the user downloads themselves. Nothing is downloaded automatically.
 
-## 9. Pruebas
+## 9. Testing
 
-- **Tests unitarios**:
-  - DSP: ganancia con rampa, limitador, respuesta en frecuencia del EQ y matriz de balance/mono, comprobados contra valores esperados.
-  - Regla de §8.2.
-  - Agrupación de procesos.
-  - Persistencia.
-- **Test de "no ensuciar"**: con todo en reposo, comprobar que no existe ningún tap ni aggregate de la app.
-- **Checklist manual** en macOS 14 / 15 / 26, en Apple Silicon y en Intel si es posible:
-  - Spotify, Music, Chrome, Safari, Zoom/Meet, un juego y Electron (Slack/Discord)
-  - conectar y desconectar auriculares Bluetooth y USB
-  - cambiar la salida por defecto
-  - matar la app con `kill -9` y comprobar que el audio vuelve a la normalidad
+- **Unit tests**:
+  - DSP: ramped gain, limiter, EQ frequency response and balance/mono matrix, checked against expected values.
+  - Rule from §8.2.
+  - Process grouping.
+  - Persistence.
+- **"Don't taint" test**: with everything at rest, check that no tap or aggregate of the app exists.
+- **Manual checklist** on macOS 14 / 15 / 26, on Apple Silicon and on Intel if possible:
+  - Spotify, Music, Chrome, Safari, Zoom/Meet, a game and Electron (Slack/Discord)
+  - connect and disconnect Bluetooth and USB headphones
+  - change the default output
+  - kill the app with `kill -9` and check that audio goes back to normal
 
-## 10. Lo que queda a criterio del builder
+## 10. Left to the builder's discretion
 
-- Estructura del proyecto Xcode / Swift Package y organización de módulos.
-- Si usar sandbox (ver §6).
-- Implementación concreta del DSP: biquads propios con vDSP o AudioUnits de Apple, siempre que se cumplan "sin clics" y "sin reservas de memoria en el callback".
-- Número de bandas del EQ manual (propuesta: hasta 10 bandas paramétricas, que es suficiente para AutoEQ).
-- Formato exacto del JSON de ajustes, con un campo de versión para migraciones.
-- Pipeline de CI (GitHub Actions: build y tests).
+- Xcode project / Swift Package structure and module organization.
+- Whether to use sandbox (see §6).
+- Concrete DSP implementation: custom biquads with vDSP or Apple AudioUnits, as long as "no clicks" and "no memory allocations in the callback" are met.
+- Number of manual EQ bands (proposal: up to 10 parametric bands, which is enough for AutoEQ).
+- Exact format of the settings JSON, with a version field for migrations.
+- CI pipeline (GitHub Actions: build and tests).
 
-## 11. Pendiente del usuario (no bloquea el diseño)
+## 11. Pending from the user (does not block the design)
 
-- **Nombre** del proyecto.
-- **Licencia**: propuesta **MIT**, por sencillez y para que cualquiera pueda reutilizarlo. GPL-3.0 si se quiere obligar a que las mejoras sigan abiertas.
-- **Firma y notarización**: cuenta de Apple Developer (99 USD al año) o distribuir sin notarizar vía GitHub Releases + Homebrew cask.
+- Project **name**.
+- **License**: proposal **MIT**, for simplicity and so that anyone can reuse it. GPL-3.0 if improvements should be required to stay open.
+- **Signing and notarization**: Apple Developer account (99 USD per year) or distribute without notarization via GitHub Releases + Homebrew cask.
