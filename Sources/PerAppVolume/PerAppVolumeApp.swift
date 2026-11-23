@@ -25,7 +25,9 @@ struct PerAppVolumeApp: App {
     private static let menuBarIcon: NSImage? = {
         guard let image = Bundle.main.image(forResource: "MenuBarIcon") else { return nil }
         image.isTemplate = true
-        image.size = NSSize(width: 18, height: 18)
+        // 18 pt tall, keeping the artwork's proportions (the ears make it wider).
+        let aspect = image.size.width / max(image.size.height, 1)
+        image.size = NSSize(width: (18 * aspect).rounded(), height: 18)
         return image
     }()
 
