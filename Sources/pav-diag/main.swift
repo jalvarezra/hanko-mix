@@ -15,6 +15,12 @@ func describe(_ snapshot: SystemSnapshot) -> String {
         lines.append(" \(mark) \(d.name)  uid=\(d.uid)  transport=\(d.transport.rawValue)  rate=\(Int(d.sampleRate))  ch=\(d.channels)")
     }
     lines.append("Default output: \(snapshot.defaultOutputUID ?? "none")")
+    lines.append("Inputs:")
+    for i in snapshot.inputDevices {
+        let mark = i.uid == snapshot.defaultInputUID ? "*" : " "
+        let volume = i.volume.map { "\(Int(($0 * 100).rounded()))%" } ?? "n/a"
+        lines.append(" \(mark) \(i.name)  uid=\(i.uid)  volume=\(volume)\(i.volumeSettable ? "" : " (fixed)")  muted=\(i.muted.map(String.init) ?? "n/a")\(i.muteSettable ? "" : " (fixed)")")
+    }
     lines.append("Apps:")
     for a in snapshot.apps {
         lines.append("   \(a.displayName)  id=\(a.id)  playing=\(a.isPlaying)  objects=\(a.processObjectIDs.sorted())  devices=\(a.outputDeviceUIDs)")

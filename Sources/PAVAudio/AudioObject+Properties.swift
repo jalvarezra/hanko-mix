@@ -32,12 +32,28 @@ func address(_ selector: AudioObjectPropertySelector,
 extension AudioObjectID {
     static let system = AudioObjectID(kAudioObjectSystemObject)
 
-    func has(_ selector: AudioObjectPropertySelector, scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal) -> Bool {
-        var addr = address(selector, scope)
+    func has(_ selector: AudioObjectPropertySelector, scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
+             element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain) -> Bool {
+        var addr = address(selector, scope, element)
         return AudioObjectHasProperty(self, &addr)
     }
 
-    func read<T>(_ selector: AudioObjectPropertySelector,
+    func isSettable(_ selector: AudioObjectPropertySelector, scope: AudioObjectPropertyScope,
+                    element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain) -> Bool {
+        var addr = address(selector, scope, element)
+        guard AudioObjectHasProperty(self, &addr) else { return false }
+        var settable: DarwinBoolean = false
+        return AudioObjectIsPropertySettable(self, &addr, &settable) == noErr && settable.boolValue
+    }
+
+    func write<T: BitwiseCopyable>(_ selector: AudioObjectPropertySelector, scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
+                  element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain, _ value: T) throws {
+        var addr = address(selector, scope, element)
+        var v = value
+        try check(AudioObjectSetPropertyData(self, &addr, 0, nil, UInt32(MemoryLayout<T>.size), &v), "write \(selector.fourCC) on \(self)")
+    }
+
+    func read<T: BitwiseCopyable>(_ selector: AudioObjectPropertySelector,
                  scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal,
                  element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain,
                  default value: T) throws -> T {
@@ -74,7 +90,12 @@ extension AudioObjectID {
 
     /// Total output channels from the stream configuration.
     func outputChannelCount() throws -> Int {
-        var addr = address(kAudioDevicePropertyStreamConfiguration, kAudioObjectPropertyScopeOutput)
+        try channelCount(scope: kAudioObjectPropertyScopeOutput)
+    }
+
+    /// Total channels for `scope` (input or output) from the stream configuration.
+    func channelCount(scope: AudioObjectPropertyScope) throws -> Int {
+        var addr = address(kAudioDevicePropertyStreamConfiguration, scope)
         var size: UInt32 = 0
         try check(AudioObjectGetPropertyDataSize(self, &addr, 0, nil, &size), "size stream configuration on \(self)")
         guard size > 0 else { return 0 }

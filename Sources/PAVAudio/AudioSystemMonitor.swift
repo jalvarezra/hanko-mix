@@ -28,24 +28,32 @@ public final class AudioSystemMonitor: @unchecked Sendable {
         let defaultUID = defaultID == 0 ? nil : try? defaultID.readString(kAudioDevicePropertyDeviceUID)
         let processes = try audioProcesses(knownDevices: devices.ids)
         let apps = AppGrouper.group(processes, ownPID: getpid(), resolver: resolver)
+        let defaultInputID = try AudioObjectID.system.read(kAudioHardwarePropertyDefaultInputDevice, default: AudioObjectID(0))
+        let defaultInputUID = defaultInputID == 0 ? nil : try? defaultInputID.readString(kAudioDevicePropertyDeviceUID)
         return SystemSnapshot(apps: apps, devices: devices.list, defaultOutputUID: defaultUID,
-                              ownProcessObjectIDs: ownProcessObjectID().map { [$0] } ?? [])
+                              ownProcessObjectIDs: ownProcessObjectID().map { [$0] } ?? [],
+                              inputDevices: devices.inputs, defaultInputUID: defaultInputUID)
     }
 
-    private func outputDevices() throws -> (list: [OutputDevice], ids: [AudioObjectID: String]) {
+    private func outputDevices() throws -> (list: [OutputDevice], ids: [AudioObjectID: String], inputs: [InputDevice]) {
         var list: [OutputDevice] = []
+        var inputs: [InputDevice] = []
         var ids: [AudioObjectID: String] = [:]
         for id in try AudioObjectID.system.readArray(kAudioHardwarePropertyDevices, of: AudioObjectID.self) {
             guard let uid = try? id.readString(kAudioDevicePropertyDeviceUID) else { continue }
             ids[id] = uid
-            guard let channels = try? id.outputChannelCount(), channels > 0,
-                  !uid.hasPrefix(Identifiers.uidPrefix) else { continue }
+            guard !uid.hasPrefix(Identifiers.uidPrefix) else { continue }
             let name = (try? id.readString(kAudioObjectPropertyName)) ?? uid
-            let transport = (try? id.read(kAudioDevicePropertyTransportType, default: UInt32(0))) ?? 0
-            let rate = (try? id.read(kAudioDevicePropertyNominalSampleRate, default: Float64(0))) ?? 0
-            list.append(OutputDevice(uid: uid, name: name, transport: Self.transportKind(transport), sampleRate: rate, channels: channels))
+            let transport = Self.transportKind((try? id.read(kAudioDevicePropertyTransportType, default: UInt32(0))) ?? 0)
+            if let channels = try? id.outputChannelCount(), channels > 0 {
+                let rate = (try? id.read(kAudioDevicePropertyNominalSampleRate, default: Float64(0))) ?? 0
+                list.append(OutputDevice(uid: uid, name: name, transport: transport, sampleRate: rate, channels: channels))
+            }
+            if let inChannels = try? id.channelCount(scope: kAudioObjectPropertyScopeInput), inChannels > 0 {
+                inputs.append(AudioDeviceControl.inputDevice(id: id, uid: uid, name: name, transport: transport))
+            }
         }
-        return (list, ids)
+        return (list, ids, inputs)
     }
 
     private func audioProcesses(knownDevices: [AudioObjectID: String]) throws -> [AudioProcessInfo] {
@@ -88,7 +96,8 @@ public final class AudioSystemMonitor: @unchecked Sendable {
     public func start(onChange: @escaping @Sendable (SystemSnapshot) -> Void) {
         queue.async { [self] in
             self.onChange = onChange
-            for selector in [kAudioHardwarePropertyProcessObjectList, kAudioHardwarePropertyDevices, kAudioHardwarePropertyDefaultOutputDevice] {
+            for selector in [kAudioHardwarePropertyProcessObjectList, kAudioHardwarePropertyDevices,
+                             kAudioHardwarePropertyDefaultOutputDevice, kAudioHardwarePropertyDefaultInputDevice] {
                 var addr = address(selector)
                 let block: AudioObjectPropertyListenerBlock = { [weak self] _, _ in self?.scheduleEmit(resubscribe: true) }
                 if AudioObjectAddPropertyListenerBlock(.system, &addr, queue, block) == noErr {
@@ -123,6 +132,13 @@ public final class AudioSystemMonitor: @unchecked Sendable {
         let devices = (try? AudioObjectID.system.readArray(kAudioHardwarePropertyDevices, of: AudioObjectID.self)) ?? []
         for id in devices {
             listen(id, address(kAudioDevicePropertyNominalSampleRate))
+            // Microphone gain and mute, on the main element and the first two channels.
+            for element: AudioObjectPropertyElement in [kAudioObjectPropertyElementMain, 1, 2] {
+                for selector in [kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyMute]
+                where id.has(selector, scope: kAudioObjectPropertyScopeInput, element: element) {
+                    listen(id, address(selector, kAudioObjectPropertyScopeInput, element))
+                }
+            }
         }
     }
 
