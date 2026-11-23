@@ -34,6 +34,7 @@ struct MenuBarView: View {
             }
             if let mic = state.defaultInput {
                 MicrophoneSectionView(state: state, mic: mic)
+                    .id(mic.uid)   // fresh slider state when the microphone changes
             }
             if let error = state.deviceError {
                 Text(error).font(.caption).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)

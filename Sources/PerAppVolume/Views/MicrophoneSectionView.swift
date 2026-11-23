@@ -7,6 +7,7 @@ struct MicrophoneSectionView: View {
     let mic: InputDevice
     /// Local value while dragging, so HAL round-trips don't make the slider jump.
     @State private var draft: Double?
+    @State private var editing = false
 
     var body: some View {
         let muted = MicMuteStrategy.isMuted(mic)
@@ -25,11 +26,11 @@ struct MicrophoneSectionView: View {
                 Slider(value: Binding(get: { draft ?? Double(mic.volume ?? 0) },
                                       set: { draft = $0; state.setMicVolume(Float($0)) }),
                        in: 0...1,
-                       onEditingChanged: { editing in if !editing { draft = nil } })
+                       onEditingChanged: { isEditing in editing = isEditing })
                     .controlSize(.small)
                     .disabled(!mic.volumeSettable)
                     .help(mic.volumeSettable ? "Microphone gain" : "This microphone doesn't support volume control")
-                Text(mic.volume.map { "\(Int((Double($0) * 100).rounded()))%" } ?? "—")
+                Text((draft ?? mic.volume.map(Double.init)).map { "\(Int(($0 * 100).rounded()))%" } ?? "—")
                     .monospacedDigit()
                     .font(.caption)
                     .frame(width: 38, alignment: .trailing)
@@ -43,5 +44,8 @@ struct MicrophoneSectionView: View {
             }
             .padding(.leading, 26)
         }
+        // Drop the local value once the device reports a new volume and the user has
+        // let go, so the slider never snaps back to a stale value on release.
+        .onChange(of: mic.volume) { if !editing { draft = nil } }
     }
 }

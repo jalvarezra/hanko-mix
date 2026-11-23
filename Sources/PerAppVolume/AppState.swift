@@ -209,8 +209,14 @@ final class AppState {
     private func rebuildRows() {
         defaultDevice = snapshot.defaultOutputUID.flatMap { snapshot.device(uid: $0) }
         selectableDevices = snapshot.devices.filter(DeviceFilter.isSelectableAsAppOutput)
-        systemOutputDevices = snapshot.devices.filter(DeviceFilter.isSelectableAsSystemOutput)
-        if inputDevices != snapshot.inputDevices { inputDevices = snapshot.inputDevices }
+        systemOutputDevices = snapshot.devices.filter {
+            DeviceFilter.isSelectableAsSystemOutput($0) || $0.uid == snapshot.defaultOutputUID
+        }
+        // Offer devices macOS accepts as default, plus the current default in any case.
+        let selectableInputs = snapshot.inputDevices.filter {
+            DeviceFilter.isSelectableAsSystemInput($0) || $0.uid == snapshot.defaultInputUID
+        }
+        if inputDevices != selectableInputs { inputDevices = selectableInputs }
         let newDefaultInput = snapshot.defaultInputUID.flatMap { uid in snapshot.inputDevices.first { $0.uid == uid } }
         if defaultInput != newDefaultInput { defaultInput = newDefaultInput }
         let playing = snapshot.apps.filter(\.isPlaying)

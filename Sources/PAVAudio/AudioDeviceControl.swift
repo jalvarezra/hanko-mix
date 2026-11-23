@@ -6,9 +6,9 @@ import PAVCore
 /// microphone's gain and mute. Never opens an audio stream.
 public enum AudioDeviceControl {
     public static func setDefaultOutput(uid: String) throws {
+        // Only the default output, like System Settings' Output picker: alerts follow it
+        // when the user chose that, and keep a fixed device otherwise.
         try AudioObjectID.system.write(kAudioHardwarePropertyDefaultOutputDevice, try deviceID(uid: uid))
-        // Also move system sounds (alerts) so everything follows the choice.
-        try? AudioObjectID.system.write(kAudioHardwarePropertyDefaultSystemOutputDevice, try deviceID(uid: uid))
     }
 
     public static func setDefaultInput(uid: String) throws {

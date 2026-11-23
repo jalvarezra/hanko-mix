@@ -8,13 +8,16 @@ public struct OutputDevice: Sendable, Hashable {
     public var transport: TransportKind
     public var sampleRate: Double
     public var channels: Int
+    /// False for devices macOS won't use as the system default (hidden in System Settings).
+    public var canBeDefault: Bool
 
-    public init(uid: String, name: String, transport: TransportKind, sampleRate: Double, channels: Int) {
+    public init(uid: String, name: String, transport: TransportKind, sampleRate: Double, channels: Int, canBeDefault: Bool = true) {
         self.uid = uid
         self.name = name
         self.transport = transport
         self.sampleRate = sampleRate
         self.channels = channels
+        self.canBeDefault = canBeDefault
     }
 }
 

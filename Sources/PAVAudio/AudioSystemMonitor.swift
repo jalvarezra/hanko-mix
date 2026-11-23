@@ -47,10 +47,16 @@ public final class AudioSystemMonitor: @unchecked Sendable {
             let transport = Self.transportKind((try? id.read(kAudioDevicePropertyTransportType, default: UInt32(0))) ?? 0)
             if let channels = try? id.outputChannelCount(), channels > 0 {
                 let rate = (try? id.read(kAudioDevicePropertyNominalSampleRate, default: Float64(0))) ?? 0
-                list.append(OutputDevice(uid: uid, name: name, transport: transport, sampleRate: rate, channels: channels))
+                let canBeDefault = ((try? id.read(kAudioDevicePropertyDeviceCanBeDefaultDevice, scope: kAudioObjectPropertyScopeOutput,
+                                                   default: UInt32(1))) ?? 1) != 0
+                list.append(OutputDevice(uid: uid, name: name, transport: transport, sampleRate: rate, channels: channels,
+                                         canBeDefault: canBeDefault))
             }
             if let inChannels = try? id.channelCount(scope: kAudioObjectPropertyScopeInput), inChannels > 0 {
-                inputs.append(AudioDeviceControl.inputDevice(id: id, uid: uid, name: name, transport: transport))
+                var input = AudioDeviceControl.inputDevice(id: id, uid: uid, name: name, transport: transport)
+                input.canBeDefault = ((try? id.read(kAudioDevicePropertyDeviceCanBeDefaultDevice, scope: kAudioObjectPropertyScopeInput,
+                                                    default: UInt32(1))) ?? 1) != 0
+                inputs.append(input)
             }
         }
         return (list, ids, inputs)

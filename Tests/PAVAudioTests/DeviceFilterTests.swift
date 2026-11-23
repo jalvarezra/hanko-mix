@@ -31,3 +31,18 @@ private func device(_ uid: String, _ transport: TransportKind) -> OutputDevice {
 @Test func ownAggregateIsNotSelectableAsSystemOutput() {
     #expect(!DeviceFilter.isSelectableAsSystemOutput(device(Identifiers.aggregateUIDPrefix + "x", .aggregate)))
 }
+
+@Test func outputThatCannotBeDefaultIsNotSelectableAsSystemOutput() {
+    var d = device("zoom-virtual", .virtual)
+    d.canBeDefault = false
+    #expect(!DeviceFilter.isSelectableAsSystemOutput(d))
+}
+
+@Test func inputThatCannotBeDefaultIsNotSelectableAsSystemInput() {
+    let ok = InputDevice(uid: "mic", name: "Mic", transport: .builtIn, volume: 1, volumeSettable: true, muted: false, muteSettable: true)
+    var hidden = ok
+    hidden.uid = "zoom-mic"
+    hidden.canBeDefault = false
+    #expect(DeviceFilter.isSelectableAsSystemInput(ok))
+    #expect(!DeviceFilter.isSelectableAsSystemInput(hidden))
+}

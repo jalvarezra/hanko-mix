@@ -15,6 +15,11 @@ public enum DeviceFilter {
 
     /// Devices offered as the system default output (AirPlay included).
     public static func isSelectableAsSystemOutput(_ device: OutputDevice) -> Bool {
-        !device.uid.hasPrefix(Identifiers.uidPrefix)
+        device.canBeDefault && !device.uid.hasPrefix(Identifiers.uidPrefix)
+    }
+
+    /// Devices offered as the system default microphone.
+    public static func isSelectableAsSystemInput(_ device: InputDevice) -> Bool {
+        device.canBeDefault && !device.uid.hasPrefix(Identifiers.uidPrefix)
     }
 }
