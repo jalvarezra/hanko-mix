@@ -6,10 +6,14 @@ import PAVCore
 final class IOContext {
     static let maxFrames = 4096
     let chain: ProcessingChain
+    let tapBufferIndex: Int
     let scratchIn = UnsafeMutablePointer<Float>.allocate(capacity: maxFrames * 2)
     let scratchOut = UnsafeMutablePointer<Float>.allocate(capacity: maxFrames * 2)
 
-    init(chain: ProcessingChain) { self.chain = chain }
+    init(chain: ProcessingChain, tapBufferIndex: Int) {
+        self.chain = chain
+        self.tapBufferIndex = tapBufferIndex
+    }
 
     deinit {
         scratchIn.deallocate()
@@ -28,7 +32,10 @@ private let ioProc: AudioDeviceIOProc = { _, _, inputData, _, outputData, _, cli
 
     // Silence every output buffer first.
     for buffer in outputs { if let data = buffer.mData { memset(data, 0, Int(buffer.mDataByteSize)) } }
-    guard let input = inputs.first, let inData = input.mData, input.mNumberChannels > 0,
+    // The tap is the last input stream; earlier ones belong to the output device (mic).
+    guard inputs.count > 0 else { return noErr }
+    let input = inputs[min(ctx.tapBufferIndex, inputs.count - 1)]
+    guard let inData = input.mData, input.mNumberChannels > 0,
           let firstOut = outputs.first, firstOut.mNumberChannels > 0 else { return noErr }
 
     let inChannels = Int(input.mNumberChannels)
@@ -123,17 +130,41 @@ public final class CoreAudioBackend: AudioBackend, @unchecked Sendable {
     }
 
     public func startIO(_ agg: AggregateHandle, chain: ProcessingChain) throws {
-        let context = Unmanaged.passRetained(IOContext(chain: chain))
+        let inputStreams = (try? AudioObjectID(agg.deviceID).readArray(kAudioDevicePropertyStreams, scope: kAudioObjectPropertyScopeInput,
+                                                                      of: AudioObjectID.self).count) ?? 1
+        guard let tapIndex = TapStreamLayout.tapStreamIndex(aggregateInputStreams: inputStreams) else {
+            throw AudioError(status: kAudioHardwareBadStreamError, context: "aggregate has no tap input stream")
+        }
+        let context = Unmanaged.passRetained(IOContext(chain: chain, tapBufferIndex: tapIndex))
         var procID: AudioDeviceIOProcID?
         do {
             try check(AudioDeviceCreateIOProcID(agg.deviceID, ioProc, context.toOpaque(), &procID), "AudioDeviceCreateIOProcID")
             guard let procID else { throw AudioError(status: kAudioHardwareUnspecifiedError, context: "IOProc ID missing") }
             ioProcs[agg.deviceID] = (procID, context)
+            disableNonTapInputs(agg.deviceID, procID: procID, inputStreams: inputStreams)
             try check(AudioDeviceStart(agg.deviceID, procID), "AudioDeviceStart")
         } catch {
             if procID == nil { context.release() } else { stopIO(agg) }   // stopIO releases the context
             throw error
         }
+    }
+
+    /// Turns off the output device's own input streams (e.g. a headset mic) for our
+    /// IOProc, so the mic is not opened and Bluetooth stays in high-quality mode.
+    private func disableNonTapInputs(_ deviceID: AudioObjectID, procID: AudioDeviceIOProcID, inputStreams: Int) {
+        guard inputStreams > 1 else { return }
+        let flags = TapStreamLayout.streamUsage(aggregateInputStreams: inputStreams)
+        let flagsOffset = MemoryLayout<AudioHardwareIOProcStreamUsage>.offset(of: \.mStreamIsOn)!
+        let size = flagsOffset + flags.count * MemoryLayout<UInt32>.size
+        let raw = UnsafeMutableRawPointer.allocate(byteCount: size, alignment: MemoryLayout<AudioHardwareIOProcStreamUsage>.alignment)
+        defer { raw.deallocate() }
+        let usage = raw.assumingMemoryBound(to: AudioHardwareIOProcStreamUsage.self)
+        usage.pointee.mIOProc = unsafeBitCast(procID, to: UnsafeMutableRawPointer.self)
+        usage.pointee.mNumberStreams = UInt32(flags.count)
+        let flagPointer = (raw + flagsOffset).assumingMemoryBound(to: UInt32.self)
+        for (i, flag) in flags.enumerated() { flagPointer[i] = flag }
+        var addr = address(kAudioDevicePropertyIOProcStreamUsage, kAudioObjectPropertyScopeInput)
+        AudioObjectSetPropertyData(deviceID, &addr, 0, nil, UInt32(size), raw)
     }
 
     public func stopIO(_ agg: AggregateHandle) {
