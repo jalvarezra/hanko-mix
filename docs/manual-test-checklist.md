@@ -11,7 +11,7 @@ Run before each release on macOS 14, 15 and 26 — Apple Silicon, and Intel if p
 
 - [ ] Lower Spotify to 40 %: the permission explanation appears, then the macOS prompt, then the volume drops with no click or gap after the first one.
 - [ ] Drag the slider quickly between 0 % and 200 %: no clicks, no harsh distortion at 200 %.
-- [ ] Double-click the slider: it returns to 100 % with no gap.
+- [ ] Click the percentage label (or drag near 100 %): it returns to exactly 100 % with no gap.
 - [ ] Mute and unmute: smooth fade, no click.
 - [ ] Quit and reopen the app; when Spotify plays again it is back at 40 %.
 - [ ] Each app: Spotify, Music, Chrome (YouTube), Safari, Zoom or Meet, a game, Slack or Discord. Chrome and Electron apps show as **one** row.

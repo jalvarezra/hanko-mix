@@ -31,14 +31,15 @@ struct AppRowView: View {
                                       set: { state.setVolume(Float($0), for: row.id) }),
                        in: Double(AppSettings.volumeRange.lowerBound)...Double(AppSettings.volumeRange.upperBound))
                     .controlSize(.small)
-                    .simultaneousGesture(TapGesture(count: 2).onEnded { state.resetVolume(for: row.id) })
-                    .help("Double-click to reset to 100%")
+                    .help("Drag near 100% to snap to it; click the percentage to reset")
             }
 
-            Text(String(format: "%d%%", Int((row.volume * 100).rounded())))
+            Button(String(format: "%d%%", Int((row.volume * 100).rounded()))) { state.resetVolume(for: row.id) }
+                .buttonStyle(.borderless)
                 .monospacedDigit()
                 .font(.caption)
                 .frame(width: 38, alignment: .trailing)
+                .help("Reset to 100%")
 
             Button {
                 state.setMuted(!row.muted, for: row.id)

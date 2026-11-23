@@ -61,7 +61,7 @@ final class AppState {
     // MARK: Intents
 
     func setVolume(_ volume: Float, for id: AppID) {
-        let clamped = min(max(volume, AppSettings.volumeRange.lowerBound), AppSettings.volumeRange.upperBound)
+        let clamped = Snap.volume(min(max(volume, AppSettings.volumeRange.lowerBound), AppSettings.volumeRange.upperBound))
         mutateApp(id) { $0.volume = clamped }
     }
 

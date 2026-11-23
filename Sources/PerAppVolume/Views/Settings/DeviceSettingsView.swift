@@ -88,10 +88,12 @@ struct DeviceSettingsView: View {
             LabeledContent("Balance") {
                 HStack {
                     Text("L").font(.caption)
-                    Slider(value: floatBinding(uid, \.balance), in: -1...1)
-                        .simultaneousGesture(TapGesture(count: 2).onEnded { state.updateDeviceSettings(uid) { $0.balance = 0 } })
-                        .help("Double-click to center")
+                    Slider(value: Binding(get: { Double(state.deviceSettings(for: uid).balance) },
+                                          set: { value in state.updateDeviceSettings(uid) { $0.balance = Snap.balance(Float(value)) } }),
+                           in: -1...1)
                     Text("R").font(.caption)
+                    Button("Center") { state.updateDeviceSettings(uid) { $0.balance = 0 } }
+                        .disabled(settings.balance == 0)
                 }
             }
             Toggle("Mono", isOn: binding(uid, \.mono))
