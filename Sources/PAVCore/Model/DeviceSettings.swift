@@ -1,10 +1,10 @@
 import Foundation
 
-public enum FilterType: String, Codable, Sendable {
+public enum FilterType: String, Codable, Sendable, Hashable {
     case peaking, lowShelf, highShelf
 }
 
-public struct EQBand: Codable, Sendable, Equatable {
+public struct EQBand: Codable, Sendable, Hashable {
     public var type: FilterType
     public var frequency: Float
     public var gainDB: Float
