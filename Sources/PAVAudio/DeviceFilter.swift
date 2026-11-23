@@ -12,4 +12,9 @@ public enum DeviceFilter {
     public static func isSelectableAsAppOutput(_ device: OutputDevice) -> Bool {
         device.transport != .airPlay && device.transport != .aggregate && !device.uid.hasPrefix(Identifiers.uidPrefix)
     }
+
+    /// Devices offered as the system default output (AirPlay included).
+    public static func isSelectableAsSystemOutput(_ device: OutputDevice) -> Bool {
+        !device.uid.hasPrefix(Identifiers.uidPrefix)
+    }
 }

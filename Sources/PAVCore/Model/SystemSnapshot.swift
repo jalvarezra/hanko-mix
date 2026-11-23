@@ -41,12 +41,17 @@ public struct SystemSnapshot: Sendable, Equatable {
     public var defaultOutputUID: String?
     /// PerAppVolume's own Core Audio process objects; always excluded from taps.
     public var ownProcessObjectIDs: Set<UInt32>
+    public var inputDevices: [InputDevice]
+    public var defaultInputUID: String?
 
-    public init(apps: [AppGroup], devices: [OutputDevice], defaultOutputUID: String?, ownProcessObjectIDs: Set<UInt32> = []) {
+    public init(apps: [AppGroup], devices: [OutputDevice], defaultOutputUID: String?, ownProcessObjectIDs: Set<UInt32> = [],
+                inputDevices: [InputDevice] = [], defaultInputUID: String? = nil) {
         self.apps = apps
         self.devices = devices
         self.defaultOutputUID = defaultOutputUID
         self.ownProcessObjectIDs = ownProcessObjectIDs
+        self.inputDevices = inputDevices
+        self.defaultInputUID = defaultInputUID
     }
 
     public func device(uid: String) -> OutputDevice? { devices.first { $0.uid == uid } }

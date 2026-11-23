@@ -23,3 +23,11 @@ private func device(_ uid: String, _ transport: TransportKind) -> OutputDevice {
         #expect(DeviceFilter.isSelectableAsAppOutput(device("d", t)))
     }
 }
+
+@Test func airPlayIsSelectableAsSystemOutput() {
+    #expect(DeviceFilter.isSelectableAsSystemOutput(device("tv", .airPlay)))
+}
+
+@Test func ownAggregateIsNotSelectableAsSystemOutput() {
+    #expect(!DeviceFilter.isSelectableAsSystemOutput(device(Identifiers.aggregateUIDPrefix + "x", .aggregate)))
+}
