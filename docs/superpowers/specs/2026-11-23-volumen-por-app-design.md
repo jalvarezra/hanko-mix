@@ -119,7 +119,7 @@ Si no necesita procesado, no se crea ningún tap para ella.
 - El IOProc del aggregate lee el audio del tap, aplica ganancia y luego la cadena del dispositivo (EQ, balance, mono), y escribe en la salida.
 
 **Dispositivos con EQ, balance o mono activos**: además, un tap de "resto" por dispositivo.
-- Tap exclusivo (`exclusive = true`) que captura *todas las apps excepto* las que ya tienen tap propio. Solo se crea si ese dispositivo es la salida por defecto, o si alguna app va a él.
+- Tap exclusivo (`exclusive = true`) **atado a ese dispositivo**, con `CATapDescription(excludingProcesses:andDeviceUID:withStream:)`. Captura *todas las apps que suenan por él excepto* las que ya tienen tap propio. Solo se crea si ese dispositivo es la salida por defecto, o si alguna app va a él.
 - Pasa por la cadena del dispositivo y sale por él.
 
 **Reconstrucción**: los taps y aggregates se recrean solo cuando cambia su composición (procesos o dispositivo). Mover un slider solo cambia parámetros del DSP y nunca recrea nada.
