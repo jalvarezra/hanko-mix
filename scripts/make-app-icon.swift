@@ -1,5 +1,6 @@
 // Builds a clean macOS app icon from the Hanko artwork.
 // Usage: swift scripts/make-app-icon.swift <source.png> <output-dir>
+// (The Hanko artwork lives in App/Branding/, which is kept out of the repo.)
 // Crops inside the artwork's tile (dropping its noisy cut-out edge), applies the
 // standard macOS icon grid (824 px rounded tile on a 1024 canvas) with a soft
 // shadow, and writes AppIcon.iconset + AppIcon.icns + AppIcon-1024.png.

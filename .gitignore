@@ -3,3 +3,4 @@ build/
 *.xcuserstate
 .superpowers/
 .swiftpm/
+App/Branding/

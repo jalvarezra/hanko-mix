@@ -1,6 +1,7 @@
 // Builds the menu bar template icon from the concept 01 glyph in hanko-concepts.png.
 // Usage: swift scripts/extract-menu-icon.swift App/Branding/HankoMenuBar-concept01.png App [preview.png]
-// (HankoMenuBar-concept01.png is the concept 01 glyph cropped from hanko-concepts.png.)
+// (HankoMenuBar-concept01.png is the concept 01 glyph cropped from hanko-concepts.png;
+// App/Branding/ is kept out of the repo.)
 // Alpha comes from each pixel's darkness, the glyph is trimmed to its bounds and
 // scaled to 18 pt tall at 1×, 2× and 3× as MenuBarIcon(.png|@2x|@3x).
 import AppKit
