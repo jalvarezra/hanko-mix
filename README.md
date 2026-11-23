@@ -22,16 +22,31 @@ It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no k
 - macOS 14.4 or later (Apple Silicon or Intel)
 - Xcode 16 or later (Swift 6) to build
 
-## Build and run
+## Install
+
+1. Download `HankoMix-<version>.dmg`, open it and drag **Hanko Mix** onto **Applications**.
+2. Open Hanko Mix from Applications. The build isn't notarized by Apple yet, so the first time macOS says it can't verify the developer:
+   - Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to the Hanko Mix message, then confirm.
+   - Or, in Terminal: `xattr -dr com.apple.quarantine "/Applications/Hanko Mix.app"`
+3. The first time you change an app's volume, Hanko Mix explains — and macOS then asks for — the **System Audio Recording** permission. It is needed to capture an app's audio, process it and play it back. Audio never leaves your Mac and nothing is written to disk.
+
+## Build from source
 
 ```bash
 scripts/build-app.sh
+```
+
+```bash
 open "build/Hanko Mix.app"
 ```
 
-The build is ad-hoc signed, not notarized. The first time, macOS may refuse to open it: right-click the app in Finder → **Open**, or allow it in **System Settings → Privacy & Security**.
+To build the installer:
 
-The first time you change an app's volume, Hanko Mix explains — and macOS then asks for — the **System Audio Recording** permission. It is needed to capture an app's audio, process it and play it back. Audio never leaves your Mac and nothing is written to disk.
+```bash
+scripts/make-dmg.sh
+```
+
+This writes `build/HankoMix-<version>.dmg`. With an Apple Developer account, set `DEVELOPER_ID` (and optionally `NOTARY_PROFILE`) to sign and notarize it; see the comments at the top of the script.
 
 ## Development
 
