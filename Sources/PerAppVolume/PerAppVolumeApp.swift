@@ -21,9 +21,23 @@ struct PerAppVolumeApp: App {
         _state = State(initialValue: state)
     }
 
+    /// Monochrome template image (adapts to light/dark menu bars); nil under `swift run`.
+    private static let menuBarIcon: NSImage? = {
+        guard let image = Bundle.main.image(forResource: "MenuBarIcon") else { return nil }
+        image.isTemplate = true
+        image.size = NSSize(width: 18, height: 18)
+        return image
+    }()
+
     var body: some Scene {
-        MenuBarExtra("PerAppVolume", systemImage: "speaker.wave.2") {
+        MenuBarExtra {
             MenuBarView(state: state)
+        } label: {
+            if let icon = Self.menuBarIcon {
+                Image(nsImage: icon)
+            } else {
+                Image(systemName: "speaker.wave.2")
+            }
         }
         .menuBarExtraStyle(.window)
 
