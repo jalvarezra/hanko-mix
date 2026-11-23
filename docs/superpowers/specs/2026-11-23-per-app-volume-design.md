@@ -96,9 +96,13 @@ An app **needs processing** if it meets any of these conditions:
 
 If it does not need processing, no tap is created for it.
 
+*Revised after the final review (2026-11-23):* only an app's **own** settings (volume, mute, routing) give it a tap of its own. Device EQ, balance or mono alone is applied by the device's "rest" tap (§8.3), not by per-app taps.
+- A tap for an app with its own settings **stays alive while the app's process exists, playing or paused**. Releasing it on pause made a lowered or muted app play at full volume for ~100–300 ms on every resume, before a new tap could be built. The cost is one idle aggregate per adjusted app.
+- A new tap starts directly at its target gain; it never fades from 100 %.
+
 **Seamless transitions** *(my decision)*.
 - A tap is **created** the first time an app needs processing. That single moment may produce a brief dropout.
-- The tap is **not destroyed** when returning to default values. It is kept alive, in transparent mode (gain 1.0, no DSP), until the app stops playing. Only then is it released.
+- The tap is **not destroyed** when returning to default values. It is kept alive, in transparent mode (gain 1.0, no DSP), until the app stops playing. Only then is it released. (This keep-alive applies to apps back at their defaults; apps that still have their own settings keep their tap as described above.)
 - That way, moving a slider 100 % → 99 % → 100 % never recreates anything.
 - The "don't taint" test (§9) is defined as: *an app that has not been touched since it started playing has no tap*.
 
@@ -119,7 +123,7 @@ If it does not need processing, no tap is created for it.
 - The aggregate's IOProc reads the audio from the tap, applies gain and then the device chain (EQ, balance, mono), and writes to the output.
 
 **Devices with EQ, balance or mono active**: additionally, one "rest" tap per device.
-- Exclusive tap (`exclusive = true`) **bound to that device**, with `CATapDescription(excludingProcesses:andDeviceUID:withStream:)`. It captures *all apps playing through it except* those that already have their own tap. It is only created if that device is the default output, or if some app goes to it.
+- Exclusive tap (`exclusive = true`) **bound to that device**, with `CATapDescription(excludingProcesses:andDeviceUID:withStream:)`. It captures *all apps playing through it except* those that already have their own tap and PerAppVolume's own process. It is only created if that device is the default output, or if some app goes to it.
 - It passes through the device chain and goes out through it.
 
 **Rebuilding**: taps and aggregates are recreated only when their composition changes (processes or device). Moving a slider only changes DSP parameters and never recreates anything.

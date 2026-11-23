@@ -17,12 +17,22 @@ Run before each release on macOS 14, 15 and 26 — Apple Silicon, and Intel if p
 - [ ] Each app: Spotify, Music, Chrome (YouTube), Safari, Zoom or Meet, a game, Slack or Discord. Chrome and Electron apps show as **one** row.
 - [ ] Video and calls stay in lip-sync while processed (added latency ≈ 20 ms or less on built-in, wired and USB outputs).
 
+- [ ] Ramp down from 200 % to 100 % and to muted on full-scale music: no harsh clipping at any point.
+- [ ] Pause and resume Spotify at 20 % (and a muted Chrome tab): no full-volume burst on resume.
+
+## Permission
+
+- [ ] Deny the "System Audio Recording" prompt: no app goes silent, and the menu shows "Permission denied" with "Open Privacy Settings".
+- [ ] Revoke the permission in Privacy settings while apps are processed: they play normally again.
+
 ## Per-app output
 
 - [ ] Send Spotify to another device: it plays there and not on the default.
 - [ ] Zoom set to a USB headset in Zoom's own settings: changing only its volume keeps it on the headset.
 - [ ] Disconnect the assigned Bluetooth headphones while playing: the app moves to the default output. Reconnect them: it moves back.
 - [ ] AirPlay and aggregate devices don't appear in the per-app output menu.
+- [ ] Assign an app to a USB or Bluetooth **headset with a microphone**: you hear the app, not your own mic; the orange mic indicator does not appear; Bluetooth stays in high-quality (not "hands-free") mode.
+- [ ] Same headset as the system default with device EQ on: the same three checks.
 
 ## Device EQ, balance, mono
 
