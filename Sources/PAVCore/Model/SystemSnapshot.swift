@@ -1,0 +1,50 @@
+public enum TransportKind: String, Sendable {
+    case builtIn, usb, bluetooth, airPlay, aggregate, virtual, hdmi, displayPort, thunderbolt, other
+}
+
+public struct OutputDevice: Sendable, Hashable {
+    public var uid: String
+    public var name: String
+    public var transport: TransportKind
+    public var sampleRate: Double
+    public var channels: Int
+
+    public init(uid: String, name: String, transport: TransportKind, sampleRate: Double, channels: Int) {
+        self.uid = uid
+        self.name = name
+        self.transport = transport
+        self.sampleRate = sampleRate
+        self.channels = channels
+    }
+}
+
+/// One app as shown to the user: possibly several audio processes (helpers).
+public struct AppGroup: Sendable, Hashable {
+    public var id: AppID
+    public var displayName: String
+    public var processObjectIDs: Set<UInt32>
+    public var isPlaying: Bool
+    public var outputDeviceUIDs: [String]
+
+    public init(id: AppID, displayName: String, processObjectIDs: Set<UInt32>, isPlaying: Bool, outputDeviceUIDs: [String]) {
+        self.id = id
+        self.displayName = displayName
+        self.processObjectIDs = processObjectIDs
+        self.isPlaying = isPlaying
+        self.outputDeviceUIDs = outputDeviceUIDs
+    }
+}
+
+public struct SystemSnapshot: Sendable, Equatable {
+    public var apps: [AppGroup]
+    public var devices: [OutputDevice]
+    public var defaultOutputUID: String?
+
+    public init(apps: [AppGroup], devices: [OutputDevice], defaultOutputUID: String?) {
+        self.apps = apps
+        self.devices = devices
+        self.defaultOutputUID = defaultOutputUID
+    }
+
+    public func device(uid: String) -> OutputDevice? { devices.first { $0.uid == uid } }
+}
