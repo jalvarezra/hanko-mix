@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "PerAppVolume",
+    name: "HankoMix",
     platforms: [.macOS("14.4")],
     products: [
-        .executable(name: "PerAppVolume", targets: ["PerAppVolume"]),
+        .executable(name: "HankoMix", targets: ["HankoMix"]),
         .executable(name: "pav-diag", targets: ["pav-diag"]),
         .executable(name: "autoeq-index", targets: ["autoeq-index"]),
     ],
@@ -15,7 +15,7 @@ let package = Package(
     targets: [
         .target(name: "PAVCore", dependencies: [.product(name: "Atomics", package: "swift-atomics")]),
         .target(name: "PAVAudio", dependencies: ["PAVCore"]),
-        .executableTarget(name: "PerAppVolume", dependencies: ["PAVCore", "PAVAudio"], resources: [.process("Resources")]),
+        .executableTarget(name: "HankoMix", dependencies: ["PAVCore", "PAVAudio"], resources: [.process("Resources")]),
         .executableTarget(name: "pav-diag", dependencies: ["PAVCore", "PAVAudio"]),
         .executableTarget(name: "autoeq-index", dependencies: ["PAVCore"]),
         .testTarget(name: "PAVCoreTests", dependencies: ["PAVCore"]),

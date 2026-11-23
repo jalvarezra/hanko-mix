@@ -46,3 +46,10 @@ private func device(_ uid: String, _ transport: TransportKind) -> OutputDevice {
     #expect(DeviceFilter.isSelectableAsSystemInput(ok))
     #expect(!DeviceFilter.isSelectableAsSystemInput(hidden))
 }
+
+@Test func leftoverAggregatesFromThePreviousNameAreNeverSelectable() {
+    let leftover = device("io.github.perappvolume.agg.123", .virtual)
+    #expect(!DeviceFilter.isSelectableAsAppOutput(leftover))
+    #expect(!DeviceFilter.isSelectableAsSystemOutput(leftover))
+    #expect(Identifiers.uidPrefix == "io.github.jalvarezra.hankomix.")
+}

@@ -2,7 +2,7 @@ import Foundation
 import PAVAudio
 import PAVCore
 
-// Developer diagnostics for PerAppVolume.
+// Developer diagnostics for Hanko Mix.
 //   pav-diag list    — devices, default output and grouped audio apps
 //   pav-diag watch   — print a snapshot on every change
 //   pav-diag tap --app <bundleID> --volume <0…2> [--output <deviceUID>]

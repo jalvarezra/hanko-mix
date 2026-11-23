@@ -1,10 +1,10 @@
-# PerAppVolume
+# Hanko Mix
 
 A free, open-source menu bar app for macOS that controls the volume of each app separately — plus per-device EQ (with AutoEQ headphone presets), balance and mono.
 
-It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no kernel extension, no admin password. If PerAppVolume quits or crashes, every app immediately goes back to playing normally.
+It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no kernel extension, no admin password. If Hanko Mix quits or crashes, every app immediately goes back to playing normally.
 
-> Working name; the final project name and license are still to be decided.
+> Named after Hanko, the author's dog. 🐶 License still to be decided.
 
 ## Features
 
@@ -13,7 +13,7 @@ It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no k
 - **Per-device EQ** — up to 10 parametric bands plus preamp, and a searchable catalog of ~6,000 [AutoEQ](https://github.com/jaakkopasanen/AutoEq) headphone presets.
 - **Balance and mono** per output device.
 - **Quick device switching** — pick the system output and microphone right from the menu.
-- **Microphone gain and mute** from the menu (no microphone permission needed; PerAppVolume never listens to it).
+- **Microphone gain and mute** from the menu (no microphone permission needed; Hanko Mix never listens to it).
 - **Remembers each app's settings** and applies them when it plays again.
 - **Hands off by default** — an app you haven't touched is never intercepted, so its sound is bit-identical and adds no latency.
 
@@ -26,12 +26,12 @@ It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no k
 
 ```bash
 scripts/build-app.sh
-open build/PerAppVolume.app
+open "build/Hanko Mix.app"
 ```
 
 The build is ad-hoc signed, not notarized. The first time, macOS may refuse to open it: right-click the app in Finder → **Open**, or allow it in **System Settings → Privacy & Security**.
 
-The first time you change an app's volume, PerAppVolume explains — and macOS then asks for — the **System Audio Recording** permission. It is needed to capture an app's audio, process it and play it back. Audio never leaves your Mac and nothing is written to disk.
+The first time you change an app's volume, Hanko Mix explains — and macOS then asks for — the **System Audio Recording** permission. It is needed to capture an app's audio, process it and play it back. Audio never leaves your Mac and nothing is written to disk.
 
 ## Development
 
@@ -62,7 +62,7 @@ Project layout:
 |---|---|
 | `Sources/PAVCore` | Pure, tested logic: DSP, the tap planner, process grouping, settings, AutoEQ |
 | `Sources/PAVAudio` | Core Audio: system monitor, tap/aggregate backend, reconciling engine |
-| `Sources/PerAppVolume` | The SwiftUI menu bar app |
+| `Sources/HankoMix` | The SwiftUI menu bar app |
 | `Sources/pav-diag`, `Sources/autoeq-index` | Command-line tools |
 | `docs/superpowers/specs`, `docs/superpowers/plans` | Design and implementation plan |
 | `docs/manual-test-checklist.md` | What to check by hand before a release |

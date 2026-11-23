@@ -44,7 +44,7 @@ private func proc(_ id: UInt32, pid: Int32, bundle: String?, path: String?, play
 }
 
 @Test func ownProcessIsExcluded() {
-    let groups = AppGrouper.group([proc(9, pid: 42, bundle: "io.github.perappvolume", path: "/Applications/PerAppVolume.app/Contents/MacOS/PerAppVolume")],
+    let groups = AppGrouper.group([proc(9, pid: 42, bundle: "io.github.jalvarezra.hankomix", path: "/Applications/Hanko Mix.app/Contents/MacOS/HankoMix")],
                                   ownPID: 42, resolver: FakeResolver())
     #expect(groups.isEmpty)
 }

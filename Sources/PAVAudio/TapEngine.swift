@@ -84,6 +84,9 @@ public final class TapEngine: @unchecked Sendable {
 
     public func cleanupStale() {
         backend.destroyStaleObjects(uidPrefix: uidPrefix)
+        if uidPrefix == Identifiers.uidPrefix {
+            backend.destroyStaleObjects(uidPrefix: Identifiers.legacyUIDPrefix)   // leftovers from before the rename
+        }
     }
 
     private func create(_ spec: TapSpec, parameters: ChainParameters) {

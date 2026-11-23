@@ -3,9 +3,9 @@ import Testing
 @testable import PAVAudio
 
 @Test func aggregateDescriptionHasPrivateDriftAndTap() {
-    let d = AggregateDescription.make(uid: "io.github.perappvolume.agg.1", outputDeviceUID: "BuiltInSpeakerDevice", tapUID: "TAP-UUID")
-    #expect(d[kAudioAggregateDeviceUIDKey] as? String == "io.github.perappvolume.agg.1")
-    #expect(d[kAudioAggregateDeviceNameKey] as? String == "PerAppVolume")
+    let d = AggregateDescription.make(uid: "io.github.jalvarezra.hankomix.agg.1", outputDeviceUID: "BuiltInSpeakerDevice", tapUID: "TAP-UUID")
+    #expect(d[kAudioAggregateDeviceUIDKey] as? String == "io.github.jalvarezra.hankomix.agg.1")
+    #expect(d[kAudioAggregateDeviceNameKey] as? String == "Hanko Mix")
     #expect(d[kAudioAggregateDeviceIsPrivateKey] as? Int == 1)
     #expect(d[kAudioAggregateDeviceMainSubDeviceKey] as? String == "BuiltInSpeakerDevice")
     #expect(d[kAudioAggregateDeviceTapAutoStartKey] as? Int == 1)

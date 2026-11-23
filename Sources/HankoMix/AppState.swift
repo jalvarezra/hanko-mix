@@ -40,6 +40,7 @@ final class AppState {
         self.store = store
         self.monitor = monitor
         self.coordinator = coordinator
+        SettingsStore.migrateLegacyDirectory()
         _ = store.load()
         settings = store.file
     }

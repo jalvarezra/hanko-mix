@@ -192,7 +192,8 @@ public final class CoreAudioBackend: AudioBackend, @unchecked Sendable {
             var value: Unmanaged<CATapDescription>?
             var size = UInt32(MemoryLayout<Unmanaged<CATapDescription>?>.size)
             guard AudioObjectGetPropertyData(id, &addr, 0, nil, &size, &value) == noErr,
-                  let description = value?.takeRetainedValue(), description.name == Identifiers.objectName else { continue }
+                  let description = value?.takeRetainedValue(),
+                  [Identifiers.objectName, Identifiers.legacyObjectName].contains(description.name) else { continue }
             AudioHardwareDestroyProcessTap(id)
         }
     }

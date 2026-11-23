@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>PerAppVolume</string>
+	<string>HankoMix</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>io.github.perappvolume</string>
+	<string>io.github.jalvarezra.hankomix</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>PerAppVolume</string>
+	<string>Hanko Mix</string>
 	<key>CFBundleDisplayName</key>
-	<string>PerAppVolume</string>
+	<string>Hanko Mix</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,7 +29,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>NSAudioCaptureUsageDescription</key>
-	<string>PerAppVolume needs access to each app's audio to change its volume and equalize it. Audio never leaves your Mac.</string>
+	<string>Hanko Mix needs access to each app's audio to change its volume and equalize it. Audio never leaves your Mac.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Open source. See LICENSE.</string>
 </dict>

@@ -42,7 +42,7 @@ public struct SystemSnapshot: Sendable, Equatable {
     public var apps: [AppGroup]
     public var devices: [OutputDevice]
     public var defaultOutputUID: String?
-    /// PerAppVolume's own Core Audio process objects; always excluded from taps.
+    /// Hanko Mix's own Core Audio process objects; always excluded from taps.
     public var ownProcessObjectIDs: Set<UInt32>
     public var inputDevices: [InputDevice]
     public var defaultInputUID: String?

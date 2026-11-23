@@ -15,7 +15,7 @@ struct GeneralSettingsView: View {
                 }
             }
             Section("Permission") {
-                Text("PerAppVolume uses the \"System Audio Recording\" permission to capture each app's audio, change its volume and equalize it, and play it back on your output device. Audio never leaves your Mac and nothing is recorded to disk.")
+                Text("Hanko Mix uses the \"System Audio Recording\" permission to capture each app's audio, change its volume and equalize it, and play it back on your output device. Audio never leaves your Mac and nothing is recorded to disk.")
                     .fixedSize(horizontal: false, vertical: true)
                 Button("Open Privacy Settings") {
                     if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AudioCapture") {

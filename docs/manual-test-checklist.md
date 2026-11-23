@@ -4,7 +4,7 @@ Run before each release on macOS 14, 15 and 26 — Apple Silicon, and Intel if p
 
 ## Hands off (the main anti-goal)
 
-- [ ] Launch the app and touch nothing while Spotify and Chrome play: the sound is unchanged. `swift run pav-diag list` lists no `uid=io.github.perappvolume.*` device. (Private aggregates are invisible to other processes, so also check the sound itself.)
+- [ ] Launch the app and touch nothing while Spotify and Chrome play: the sound is unchanged. `swift run pav-diag list` lists no `uid=io.github.jalvarezra.hankomix.*` device. (Private aggregates are invisible to other processes, so also check the sound itself.)
 - [ ] Before granting the permission, moving a slider shows the in-popover explanation; "Not now" leaves every app untouched.
 
 ## Per-app volume
@@ -55,7 +55,7 @@ Run before each release on macOS 14, 15 and 26 — Apple Silicon, and Intel if p
 
 - [ ] `kill -9` the app while it processes audio: every app immediately plays normally again.
 - [ ] Switch the default output while apps are processed: they follow without staying silent.
-- [ ] Corrupt `~/Library/Application Support/PerAppVolume/settings.json` (write `{nope`): the app starts with defaults and keeps a `settings.corrupt-*.json` backup.
+- [ ] Corrupt `~/Library/Application Support/Hanko Mix/settings.json` (write `{nope`): the app starts with defaults and keeps a `settings.corrupt-*.json` backup.
 
 ## Settings
 

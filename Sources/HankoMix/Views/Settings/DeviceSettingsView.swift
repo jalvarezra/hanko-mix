@@ -6,7 +6,7 @@ import SwiftUI
 enum BundledAutoEQ {
     static let catalog: AutoEQCatalog? = {
         let roots = [Bundle.main.resourceURL, Bundle.main.bundleURL].compactMap { $0 }
-        guard let url = AutoEQCatalog.locate(bundleName: "PerAppVolume_PerAppVolume.bundle", searchRoots: roots) else { return nil }
+        guard let url = AutoEQCatalog.locate(bundleName: "HankoMix_HankoMix.bundle", searchRoots: roots) else { return nil }
         return try? AutoEQCatalog.loadBundled(from: url)
     }()
 }

@@ -58,7 +58,7 @@ private struct PermissionDeniedNotice: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Permission denied", systemImage: "exclamationmark.lock").font(.headline)
-            Text("PerAppVolume can't change any app's volume without the \"System Audio Recording\" permission. Your apps keep playing normally.")
+            Text("Hanko Mix can't change any app's volume without the \"System Audio Recording\" permission. Your apps keep playing normally.")
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
@@ -79,7 +79,7 @@ private struct PermissionNotice: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Permission needed", systemImage: "lock.shield").font(.headline)
-            Text("To change an app's volume, PerAppVolume needs the \"System Audio Recording\" permission. macOS will ask you next. Audio never leaves your Mac.")
+            Text("To change an app's volume, Hanko Mix needs the \"System Audio Recording\" permission. macOS will ask you next. Audio never leaves your Mac.")
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {

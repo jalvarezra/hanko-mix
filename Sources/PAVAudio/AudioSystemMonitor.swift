@@ -42,7 +42,7 @@ public final class AudioSystemMonitor: @unchecked Sendable {
         for id in try AudioObjectID.system.readArray(kAudioHardwarePropertyDevices, of: AudioObjectID.self) {
             guard let uid = try? id.readString(kAudioDevicePropertyDeviceUID) else { continue }
             ids[id] = uid
-            guard !uid.hasPrefix(Identifiers.uidPrefix) else { continue }
+            guard !Identifiers.isOwnUID(uid) else { continue }
             let name = (try? id.readString(kAudioObjectPropertyName)) ?? uid
             let transport = Self.transportKind((try? id.read(kAudioDevicePropertyTransportType, default: UInt32(0))) ?? 0)
             if let channels = try? id.outputChannelCount(), channels > 0 {

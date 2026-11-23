@@ -9,7 +9,7 @@ final class AudioCoordinator: @unchecked Sendable {
         var plannedCount: Int
     }
 
-    let queue = DispatchQueue(label: "io.github.perappvolume.audio", qos: .userInteractive)
+    let queue = DispatchQueue(label: "io.github.jalvarezra.hankomix.audio", qos: .userInteractive)
     private let engine: TapEngine
     private var keepAlive: Set<AppID> = []
 

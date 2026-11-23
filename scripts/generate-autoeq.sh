@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerates Sources/PerAppVolume/Resources/autoeq.json from a pinned AutoEq commit.
+# Regenerates Sources/HankoMix/Resources/autoeq.json from a pinned AutoEq commit.
 # AutoEq (https://github.com/jaakkopasanen/AutoEq) is MIT licensed; see THIRD_PARTY_NOTICES.md.
 set -euo pipefail
 AUTOEQ_COMMIT="7ae0f56d53074872b028649617a22bbb4232feb7"
@@ -16,4 +16,4 @@ git sparse-checkout set --no-cone '/LICENSE' '/results/**/*ParametricEQ.txt'
 git checkout --quiet "$AUTOEQ_COMMIT"
 
 cd "$ROOT"
-swift run -c release autoeq-index "$CHECKOUT/results" "$ROOT/Sources/PerAppVolume/Resources/autoeq.json"
+swift run -c release autoeq-index "$CHECKOUT/results" "$ROOT/Sources/HankoMix/Resources/autoeq.json"

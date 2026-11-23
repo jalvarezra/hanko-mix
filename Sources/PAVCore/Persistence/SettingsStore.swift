@@ -37,16 +37,31 @@ public final class SettingsStore: @unchecked Sendable {
     public private(set) var isReadOnly = false
 
     private let directory: URL
-    private let queue = DispatchQueue(label: "io.github.perappvolume.settings")
+    private let queue = DispatchQueue(label: "io.github.jalvarezra.hankomix.settings")
     private var pendingWrite: DispatchWorkItem?
 
     public init(directory: URL) {
         self.directory = directory
     }
 
-    public static var defaultDirectory: URL {
+    private static var applicationSupport: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("PerAppVolume", isDirectory: true)
+    }
+
+    public static var defaultDirectory: URL {
+        applicationSupport.appendingPathComponent("Hanko Mix", isDirectory: true)
+    }
+
+    /// Where settings lived before the app was renamed to Hanko Mix.
+    public static var legacyDirectory: URL {
+        applicationSupport.appendingPathComponent("PerAppVolume", isDirectory: true)
+    }
+
+    /// Moves the pre-rename settings folder into place, unless the new one already exists.
+    public static func migrateLegacyDirectory(from legacy: URL = legacyDirectory, to current: URL = defaultDirectory) {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: legacy.path), !fm.fileExists(atPath: current.path) else { return }
+        try? fm.moveItem(at: legacy, to: current)
     }
 
     private var fileURL: URL { directory.appendingPathComponent("settings.json") }

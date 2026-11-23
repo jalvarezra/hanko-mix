@@ -73,3 +73,25 @@ private func settingsURL(_ dir: URL) -> URL { dir.appendingPathComponent("settin
     #expect(store.load() == .loaded)
     #expect(store.file.devices["builtin"]?.bands.count == 10)
 }
+
+@Test func legacySettingsFolderIsMovedToTheNewOne() throws {
+    let root = tempDir()
+    let legacy = root.appendingPathComponent("PerAppVolume")
+    let current = root.appendingPathComponent("Hanko Mix")
+    try FileManager.default.createDirectory(at: legacy, withIntermediateDirectories: true)
+    try Data(#"{"version":1}"#.utf8).write(to: legacy.appendingPathComponent("settings.json"))
+    SettingsStore.migrateLegacyDirectory(from: legacy, to: current)
+    #expect(FileManager.default.fileExists(atPath: current.appendingPathComponent("settings.json").path))
+    #expect(!FileManager.default.fileExists(atPath: legacy.path))
+}
+
+@Test func migrationNeverOverwritesExistingSettings() throws {
+    let root = tempDir()
+    let legacy = root.appendingPathComponent("PerAppVolume")
+    let current = root.appendingPathComponent("Hanko Mix")
+    for dir in [legacy, current] { try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true) }
+    try Data("old".utf8).write(to: legacy.appendingPathComponent("settings.json"))
+    try Data("new".utf8).write(to: current.appendingPathComponent("settings.json"))
+    SettingsStore.migrateLegacyDirectory(from: legacy, to: current)
+    #expect(try Data(contentsOf: current.appendingPathComponent("settings.json")) == Data("new".utf8))
+}
