@@ -4,7 +4,7 @@ A free, open-source menu bar app for macOS that controls the volume of each app 
 
 It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no kernel extension, no admin password. If Hanko Mix quits or crashes, every app immediately goes back to playing normally.
 
-> Named after Hanko, the author's dog. 🐶 License still to be decided.
+> Named after Hanko, the author's dog. 🐶
 
 ## Features
 
@@ -24,7 +24,7 @@ It uses the Core Audio **process taps** API (macOS 14.4+): no audio driver, no k
 
 ## Install
 
-1. Download `HankoMix-<version>.dmg`, open it and drag **Hanko Mix** onto **Applications**.
+1. Download `HankoMix-<version>.dmg` from the [latest release](https://github.com/jalvarezra/hanko-mix/releases/latest), open it and drag **Hanko Mix** onto **Applications**.
 2. Open Hanko Mix from Applications. The build isn't notarized by Apple yet, so the first time macOS says it can't verify the developer:
    - Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to the Hanko Mix message, then confirm.
    - Or, in Terminal: `xattr -dr com.apple.quarantine "/Applications/Hanko Mix.app"`
@@ -91,3 +91,7 @@ Project layout:
 ## Credits
 
 Headphone presets from [AutoEq](https://github.com/jaakkopasanen/AutoEq) by Jaakko Pasanen (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## License
+
+[MIT](LICENSE) © 2026 Jose Alvarez

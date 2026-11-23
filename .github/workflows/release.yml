@@ -1,0 +1,32 @@
+name: Release
+
+# Push a tag like v0.2.0 (matching CFBundleShortVersionString in App/Info.plist)
+# to build the DMG and attach it to the GitHub release for that tag.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  dmg:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: swift test
+      - name: Build DMG
+        run: scripts/make-dmg.sh
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          DMG="build/HankoMix-${TAG#v}.dmg"
+          test -f "$DMG" || { echo "::error::$DMG not found — does the tag match the version in App/Info.plist?"; exit 1; }
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$DMG" --clobber
+          else
+            gh release create "$TAG" "$DMG" --title "Hanko Mix ${TAG#v}" --generate-notes
+          fi
