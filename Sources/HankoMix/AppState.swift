@@ -31,7 +31,8 @@ final class AppState {
     @ObservationIgnored private let coordinator: AudioCoordinator
     @ObservationIgnored private var snapshot = SystemSnapshot(apps: [], devices: [], defaultOutputUID: nil)
     @ObservationIgnored private var statuses: [TapKind: TapStatus] = [:]
-    @ObservationIgnored private var seenThisSession: [AppID: String] = [:]
+    @ObservationIgnored private var recentApps = RecentApps()
+    @ObservationIgnored private var idleRefreshTimer: Timer?
     @ObservationIgnored private var icons: [AppID: NSImage] = [:]
     @ObservationIgnored private var permissionDeferred = false
     @ObservationIgnored private var rememberedMicVolumes: [String: Float] = [:]
@@ -56,9 +57,14 @@ final class AppState {
         monitor.start { [weak self] snapshot in
             Task { @MainActor in self?.receive(snapshot) }
         }
+        // Silent apps hide after a while even when no new snapshot arrives.
+        idleRefreshTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.rebuildRows() }
+        }
     }
 
     func shutdown() {
+        idleRefreshTimer?.invalidate()
         monitor.stop()
         coordinator.shutdown()
         try? store.flush()
@@ -156,7 +162,7 @@ final class AppState {
     private func mutateApp(_ id: AppID, _ change: (inout AppSettings) -> Void) {
         permissionDeferred = false
         store.mutate { file in
-            var app = file.apps[id.rawValue] ?? AppSettings(displayName: self.seenThisSession[id] ?? id.rawValue)
+            var app = file.apps[id.rawValue] ?? AppSettings(displayName: self.recentApps.name(for: id) ?? id.rawValue)
             change(&app)
             file.apps[id.rawValue] = app
         }
@@ -165,6 +171,7 @@ final class AppState {
 
     private func receive(_ snapshot: SystemSnapshot) {
         self.snapshot = snapshot
+        recentApps.observe(snapshot.apps, at: Date())
         rememberPlayingApps(snapshot)
         settingsChanged()
     }
@@ -173,7 +180,6 @@ final class AppState {
     private func rememberPlayingApps(_ snapshot: SystemSnapshot) {
         let now = Date()
         for app in snapshot.apps where app.isPlaying {
-            seenThisSession[app.id] = app.displayName
             let existing = store.file.apps[app.id.rawValue]
             if existing == nil || existing!.lastSeen.map({ now.timeIntervalSince($0) > 3600 }) ?? true {
                 store.mutate { file in
@@ -224,9 +230,8 @@ final class AppState {
         let playingIDs = Set(playing.map(\.id))
         var result = playing.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
             .map { row(id: $0.id, name: $0.displayName, playing: true) }
-        let recent = seenThisSession.filter { !playingIDs.contains($0.key) }
-            .sorted { $0.value.localizedCaseInsensitiveCompare($1.value) == .orderedAscending }
-        result += recent.map { row(id: $0.key, name: $0.value, playing: false) }
+        result += recentApps.visibleIdle(excluding: playingIDs, at: Date())
+            .map { row(id: $0.id, name: $0.name, playing: false) }
         if result != rows { rows = result }
     }
 
